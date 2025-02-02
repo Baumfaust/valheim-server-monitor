@@ -26,6 +26,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt || true  # Ignore if no requirements.txt
 
+      - name: Install Linters
+        run: |
+          pip install flake8 black isort
+
+      - name: Run Linters
+        run: |
+          flake8 .  # Checks for style errors
+          black --check .  # Ensures code is properly formatted
+          isort --check-only .  # Ensures imports are sorted
+
       - name: Run Pytest
         run: |
           pytest tests --disable-warnings
