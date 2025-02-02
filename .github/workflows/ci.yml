@@ -26,6 +26,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt || true  # Ignore if no requirements.txt
 
-      - name: Run Tests
+      - name: Run Pytest
         run: |
-          python -m unittest discover -s tests
+          pytest tests --disable-warnings
