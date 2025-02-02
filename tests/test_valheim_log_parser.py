@@ -44,7 +44,7 @@ def test_parse_valheim_log():
         "This is not a valid log entry.",
         'Session "Missing IP" with join code 12345 is active with 2 player(s)',
         'Session "Missing players" with join code 12345 and IP 192.168.1.1:2456 is active with player(s)',
-        'Session "Wrong format" with join code abcde and IP 192.168.1.1:2456 is active with 2 player(s)',  # test for non digit join code. should fail
+        'Session "Wrong format" with join code abcde and IP 192.168.1.1:2456 is active with 2 player(s)',
     ]
     for log_entry in negative_test_cases:
         actual_result = parse_valheim_log(log_entry)
