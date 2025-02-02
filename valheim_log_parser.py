@@ -43,7 +43,8 @@ def handle_message(
 
 def parse_valheim_log(entry_message):
     """Parses Valheim server log messages for session information."""
-    pattern = r"Session \"(.*?)\" with join code (\d+) and IP (.*?:\d+) is active with (\d+) player\(s\)"
+    pattern = (r"Session \"(.*?)\" with join code (\d+) and IP (.*?:\d+) "
+               r"is active with (\d+) player\(s\)")
     match = re.search(pattern, entry_message)
     if match:
         session_name = match.group(1)
