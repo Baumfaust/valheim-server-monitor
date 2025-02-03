@@ -2,7 +2,7 @@
 
 import re
 from dataclasses import dataclass
-from typing import Optional, Callable, Any
+from typing import Any, Callable, Optional
 
 
 # Define a base class for log entries
@@ -34,9 +34,8 @@ def handle_message(callback: Optional[Callable[[LogEntry], None]], entry: dict[s
         return  # Handle cases where MESSAGE is missing
 
     message = entry["MESSAGE"]
-    if log_entry := parse_valheim_log(message):
-        if callback:
-            callback(log_entry)
+    if log_entry := parse_valheim_log(message) and callback:
+        callback(log_entry)
 
 
 def parse_valheim_log(entry_message):
