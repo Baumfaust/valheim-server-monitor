@@ -23,11 +23,13 @@ def test_parse_valheim_log():
             ValheimSession("Server with spaces", 0, "127.0.0.1:1234", 1),
         ),
         (
-            'Session "Server-with-dashes" with join code 123-456 and IP 127.0.0.1:1234 is active with 1 player(s)',  # test for dash in join code. should fail
+            # test for dash in join code. should fail
+            'Session "Server-with-dashes" with join code 123-456 and IP 127.0.0.1:1234 is active with 1 player(s)',
             None,
         ),
         (
-            'Session "Server-with-dashes" with join code 123456 and IP 127.0.0.1:1234 is active with 1 player(s)',  # correct test case for dash in servername
+            # correct test case for dash in servername
+            'Session "Server-with-dashes" with join code 123456 and IP 127.0.0.1:1234 is active with 1 player(s)',
             ValheimSession("Server-with-dashes", 123456, "127.0.0.1:1234", 1),
         ),
     ]
