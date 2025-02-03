@@ -1,6 +1,9 @@
-import pytest
 import asyncio
+
+import pytest
+
 from event_bus import EventBus
+
 
 @pytest.mark.asyncio(loop_scope='function')
 async def test_event_bus_publish_and_subscribe():
