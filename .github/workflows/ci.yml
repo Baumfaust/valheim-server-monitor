@@ -26,6 +26,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt || true  # Ignore if no requirements.txt
 
+      - name: Install Linter
+        run: |
+          pip install ruff
+
+      - name: Run Linter
+        run: |
+          ruff check .
+
       - name: Run Pytest
         run: |
           pytest tests --disable-warnings
