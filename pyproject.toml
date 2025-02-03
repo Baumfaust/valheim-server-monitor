@@ -1,5 +1,11 @@
-[tool.black]
+[tool.ruff]
 line-length = 120
 
-[flake8]
-max-line-length = 120
+[tool.ruff.lint]
+select = ["E", "I", "F", "UP", "SIM", "B"]
+ignore = ["E741"]
+task-tags = ["TODO", "FIXME", "HACK", "XXX"]
+
+
+[tool.ruff.format]
+quote-style = "double"  # Optional: Use double quotes

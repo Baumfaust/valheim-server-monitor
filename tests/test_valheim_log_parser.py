@@ -1,14 +1,13 @@
 from valheim_log_parser import (
-    parse_valheim_log,
-    ValheimSession,
     LogEntry,
+    ValheimSession,
     handle_message,
+    parse_valheim_log,
 )  # Import the dataclass
 
 
 def test_parse_valheim_log():
     """Tests the parse_valheim_log function with various log entries."""
-
     # Positive test cases
     test_cases = [
         (
@@ -35,9 +34,9 @@ def test_parse_valheim_log():
 
     for log_entry, expected_result in test_cases:
         actual_result = parse_valheim_log(log_entry)
-        assert (
-            actual_result == expected_result
-        ), f"Test failed for input: '{log_entry}'. Expected: {expected_result}, Got: {actual_result}"
+        assert actual_result == expected_result, (
+            f"Test failed for input: '{log_entry}'. Expected: {expected_result}, Got: {actual_result}"
+        )
 
     # Negative test cases (no match)
     negative_test_cases = [
@@ -48,9 +47,9 @@ def test_parse_valheim_log():
     ]
     for log_entry in negative_test_cases:
         actual_result = parse_valheim_log(log_entry)
-        assert (
-            actual_result is None
-        ), f"Negative test failed for input: '{log_entry}'. Expected None, Got: {actual_result}"
+        assert actual_result is None, (
+            f"Negative test failed for input: '{log_entry}'. Expected None, Got: {actual_result}"
+        )
 
 
 def test_handle_message_with_callback():
@@ -60,7 +59,7 @@ def test_handle_message_with_callback():
         called_with.append(log_entry)
 
     test_entry = {
-        "MESSAGE": 'Session "TestServer" with join code 12345 and IP 127.0.0.1:2456 is active with 2 player(s)'
+        "MESSAGE": 'Session "TestServer" with join code 12345 and IP 127.0.0.1:2456 is active with 2 player(s)',
     }
     handle_message(mock_callback, test_entry)
     assert len(called_with) == 1
@@ -70,7 +69,7 @@ def test_handle_message_with_callback():
 
 def test_handle_message_no_callback():
     test_entry = {
-        "MESSAGE": 'Session "TestServer" with join code 12345 and IP 127.0.0.1:2456 is active with 2 player(s)'
+        "MESSAGE": 'Session "TestServer" with join code 12345 and IP 127.0.0.1:2456 is active with 2 player(s)',
     }
     handle_message(None, test_entry)
 

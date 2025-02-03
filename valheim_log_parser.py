@@ -28,9 +28,7 @@ class PlayerJoined(LogEntry):
     player_name: str
 
 
-def handle_message(
-    callback: Optional[Callable[[LogEntry], None]], entry: dict[str, Any]
-):
+def handle_message(callback: Optional[Callable[[LogEntry], None]], entry: dict[str, Any]):
     """Handles a journal entry and calls the callback if appropriate."""
     if "MESSAGE" not in entry:
         return  # Handle cases where MESSAGE is missing
