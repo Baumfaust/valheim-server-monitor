@@ -34,7 +34,7 @@ def handle_message(callback: Optional[Callable[[LogEntry], None]], entry: dict[s
         return  # Handle cases where MESSAGE is missing
 
     message = entry["MESSAGE"]
-    if log_entry := parse_valheim_log(message) and callback:
+    if (log_entry := parse_valheim_log(message)) and callback:
         callback(log_entry)
 
 
