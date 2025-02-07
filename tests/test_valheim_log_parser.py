@@ -1,4 +1,4 @@
-from valheim_log_parser import (
+from monitor.valheim_log_parser import (
     LogEntry,
     ValheimSession,
     handle_message,

@@ -1,27 +1,34 @@
 import asyncio
 
-
 class EventBus:
     def __init__(self):
-        self.queue = asyncio.Queue()
         self.subscribers = {}
+        self.ready_events = {}  # Track readiness of different components
 
-    async def publish(self, event_type, data):
-        """Publish an event"""
-        await self.queue.put((event_type, data))
+    def subscribe(self, event_name, callback):
+        if event_name not in self.subscribers:
+            self.subscribers[event_name] = []
+        self.subscribers[event_name].append(callback)
+        print("Subscribed to", event_name)
 
-    def subscribe(self, event_type, callback):
-        """Subscribe to an event"""
-        if event_type not in self.subscribers:
-            self.subscribers[event_type] = []
-        self.subscribers[event_type].append(callback)
+    async def publish(self, event_name, event_data):
+        if event_name in self.subscribers:
+            for callback in self.subscribers[event_name]:
+                await callback(event_data)
+                print("Published", event_name)
 
-    async def start_listening(self):
-        """Continuously listen for new events"""
-        while True:
-            event_type, data = await self.queue.get()
-            if event_type in self.subscribers:
-                for callback in self.subscribers[event_type]:
-                    await callback(data)
+    def register_ready_event(self, name):
+        """Registers a readiness event that components will signal when ready."""
+        self.ready_events[name] = asyncio.Event()
+        print("Registered ready event", name)
+
+    async def wait_for_all_ready(self):
+        """Waits until all registered components signal readiness."""
+        await asyncio.gather(*(event.wait() for event in self.ready_events.values()))
+
+    def signal_ready(self, name):
+        """Marks a component as ready."""
+        if name in self.ready_events:
+            self.ready_events[name].set()
 
 event_bus = EventBus()

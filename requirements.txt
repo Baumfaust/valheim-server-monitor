@@ -1,1 +1,5 @@
-asyncio
+discord.py 
+aiohttp 
+asyncio 
+systemd
+python-dotenv
