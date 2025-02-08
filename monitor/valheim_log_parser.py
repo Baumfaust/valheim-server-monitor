@@ -2,9 +2,8 @@
 
 import re
 from dataclasses import dataclass
-from typing import Any, Callable, Optional
 
-from event_bus import event_bus
+from event_bus import event_bus, Topic
 
 
 # Define a base class for log entries
@@ -29,17 +28,7 @@ class ValheimSession(LogEntry):
 class PlayerJoined(LogEntry):
     player_name: str
 
-
-# async def handle_message(entry: dict[str, Any]):
-async def handle_message(entry_message):
-
-    if log_entry := parse_valheim_log(entry_message):
-            print(f"pushing event {log_entry}")
-            await event_bus.publish("ValheimLogEvent", log_entry)
-
-
-def parse_valheim_log(entry_message):
-    """Parses Valheim server log messages for session information."""
+def parse_session_message(entry_message: str):
     pattern = (
         r"Session \"(.*?)\" with join code (\d+) and IP (.*?:\d+) "
         r"is active with (\d+) player\(s\)"
@@ -52,6 +41,58 @@ def parse_valheim_log(entry_message):
         player_count = int(match.group(4))
         return ValheimSession(session_name, join_code, address, player_count)
     return None
+
+# Parser for player join messages
+def parse_player_join_message(entry_message: str):
+    # This pattern matches:
+    # "Console: <color=orange>Erwin</color>: <color=#FFEB04FF>I HAVE ARRIVED!</color>"
+    pattern = r"Console: <color=orange>(.*?)</color>: <color=#FFEB04FF>I HAVE ARRIVED!</color>"
+    match = re.search(pattern, entry_message)
+    if match:
+        player_name = match.group(1)
+        return PlayerJoined(player_name)
+    return None
+
+# List of parser functions for extensibility
+_log_parsers = [
+    parse_session_message,
+    parse_player_join_message,
+    # Additional parsers can be added here
+]
+
+def parse_valheim_log(entry_message: str) -> LogEntry | None:
+    """
+    Iterates over registered parsers and returns the first matching log entry.
+    Returns None if no parser matches the entry message.
+    """
+    for parser in _log_parsers:
+        result = parser(entry_message)
+        if result is not None:
+            return result
+    return None
+
+# async def handle_message(entry: dict[str, Any]):
+async def handle_message(entry_message):
+
+    if log_entry := parse_valheim_log(entry_message):
+            print(f"pushing event {log_entry}")
+            await event_bus.publish(Topic.LOG_EVENT, log_entry)
+
+
+# def parse_valheim_log(entry_message):
+#     """Parses Valheim server log messages for session information."""
+#     pattern = (
+#         r"Session \"(.*?)\" with join code (\d+) and IP (.*?:\d+) "
+#         r"is active with (\d+) player\(s\)"
+#     )
+#     match = re.search(pattern, entry_message)
+#     if match:
+#         session_name = match.group(1)
+#         join_code = int(match.group(2))
+#         address = match.group(3)
+#         player_count = int(match.group(4))
+#         return ValheimSession(session_name, join_code, address, player_count)
+#     return None
 
 # def handle_message(callback: Optional[Callable[[LogEntry], None]], entry: dict[str, Any]):
 #     """Handles a journal entry and calls the callback if appropriate."""

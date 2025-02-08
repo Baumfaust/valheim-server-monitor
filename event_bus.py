@@ -1,26 +1,34 @@
 import asyncio
+import logging
+from enum import Enum
+
+logger = logging.getLogger(__name__)
+
+class Topic(Enum):
+     LOG_EVENT= 1
+
 
 class EventBus:
     def __init__(self):
         self.subscribers = {}
         self.ready_events = {}  # Track readiness of different components
 
-    def subscribe(self, event_name, callback):
-        if event_name not in self.subscribers:
-            self.subscribers[event_name] = []
-        self.subscribers[event_name].append(callback)
-        print("Subscribed to", event_name)
+    def subscribe(self, topic: Topic, callback):
+        if topic not in self.subscribers:
+            self.subscribers[topic] = []
+        self.subscribers[topic].append(callback)
+        logger.debug("Subscribed to", topic)
 
     async def publish(self, event_name, event_data):
         if event_name in self.subscribers:
             for callback in self.subscribers[event_name]:
                 await callback(event_data)
-                print("Published", event_name)
+                logger.debug("Published", event_name)
 
     def register_ready_event(self, name):
         """Registers a readiness event that components will signal when ready."""
         self.ready_events[name] = asyncio.Event()
-        print("Registered ready event", name)
+        logger.debug("Registered ready event", name)
 
     async def wait_for_all_ready(self):
         """Waits until all registered components signal readiness."""
