@@ -63,4 +63,10 @@ async def on_ready():
     ready_discord.set()
 
 async def run_bot():
-    await client.start(TOKEN)
+    try:
+        await client.start(TOKEN)
+    except asyncio.CancelledError:
+        print("Bot task cancelled. Closing Discord client...")
+        # Close the client gracefully if cancellation is received.
+        await client.close()
+        raise

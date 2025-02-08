@@ -1,4 +1,4 @@
-# Valheim Server Monitor Project ⚔️🏹
+# ⚔️ Valheim Server Monitor Project 🏹
 
 Welcome to the **Valheim Server Monitor Project** – an all-in-one solution to monitor your Valheim server, send real-time notifications to your Discord community, and visualize server metrics on a Grafana board. Inspired by the rugged spirit of Norse legends, this project is built with modern Python async technology to keep you in the loop during every epic server battle!
 
