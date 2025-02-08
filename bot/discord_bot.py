@@ -22,9 +22,7 @@ client = discord.Client(intents=intents)
 ready_discord = asyncio.Event()
 
 async def send_discord_message(event_data):
-    logger.debug("wait for discord to be ready")
     await client.wait_until_ready()
-    logger.debug("Bot ready")
     if default_channel:
         match event_data:
             case ValheimSession(session_name, join_code, address, player_count):
@@ -32,9 +30,9 @@ async def send_discord_message(event_data):
             case PlayerJoined(player_name):
                 await default_channel.send(f"🏹 **{player_name}** joined the game!")
             case _:
-                logger.warning("⚠️ Unknown event type")
+                logger.warning("⚠Unknown event type")
     else:
-        logger.debug("⚠️ No valid channel found!")
+        logger.debug("No valid channel found!")
 
 async def handle_discord_events():
     async def send_event_to_discord(event_data):
@@ -42,7 +40,7 @@ async def handle_discord_events():
         await send_discord_message(event_data)
 
     event_bus.subscribe(Topic.LOG_EVENT, send_event_to_discord)
-    logger.debug("✅ Discord bot subscribed to events.")
+    logger.debug("Discord bot subscribed to events.")
 
 @client.event
 async def on_ready():
@@ -55,7 +53,7 @@ async def on_ready():
         for channel in guild.text_channels:
             if channel.permissions_for(guild.me).send_messages:
                 default_channel = channel
-                logger.debug(f"✅ Using channel: {default_channel.name} ({default_channel.id})")
+                logger.debug(f"Using channel: {default_channel.name} ({default_channel.id})")
                 break
         if default_channel:
             break
@@ -66,7 +64,8 @@ async def run_bot():
     try:
         await client.start(TOKEN)
     except asyncio.CancelledError:
-        print("Bot task cancelled. Closing Discord client...")
+        logger.info("Bot task cancelled. Closing Discord client...")
         # Close the client gracefully if cancellation is received.
         await client.close()
+        logger.info("Discord client closed.")
         raise

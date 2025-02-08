@@ -17,13 +17,13 @@ class EventBus:
         if topic not in self.subscribers:
             self.subscribers[topic] = []
         self.subscribers[topic].append(callback)
-        logger.debug("Subscribed to", topic)
+        logger.debug(f"Subscribed to {topic}")
 
-    async def publish(self, event_name, event_data):
-        if event_name in self.subscribers:
-            for callback in self.subscribers[event_name]:
+    async def publish(self, topic, event_data):
+        if topic in self.subscribers:
+            for callback in self.subscribers[topic]:
                 await callback(event_data)
-                logger.debug("Published", event_name)
+                logger.debug(f"Published {event_data} to {topic} ")
 
     def register_ready_event(self, name):
         """Registers a readiness event that components will signal when ready."""

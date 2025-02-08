@@ -1,27 +1,28 @@
 import asyncio
-import time
-import re
-from event_bus import event_bus
-from monitor.valheim_log_parser import parse_valheim_log
+import logging
+import os
 
-LOG_FILE = "/path/to/logfile.log"
+from monitor.valheim_log_parser import parse_valheim_log, handle_message
 
-async def monitor_log():
+logger = logging.getLogger(__name__)
+
+async def log_file_monitor(file_path: str):
     """Monitors the log file for new events."""
-    with open(LOG_FILE, "r") as file:
-        file.seek(0, 2)  # Move to the end of the file
-        while True:
-            line = file.readline()
-            if line:
-                await parse_valheim_log(line.strip())
-                # await process_log_line(line.strip())
-            else:
-                await asyncio.sleep(1)  # Avoid busy-waiting
-
-# async def process_log_line(line):
-#     """Processes a log line and triggers events based on patterns."""
-#     if "Server is now online" in line:
-#         await event_bus.publish("ServerOnlineEvent", {"message": "Server is online"})
-#     elif match := re.search(r"Player (\w+) joined the game", line):
-#         await event_bus.publish("PlayerJoined", {"player": match.group(1)})
-#
+    logger.info(f"Monitoring log file: {file_path}")
+    try:
+        with open(file_path, "r") as file:
+            file.seek(0, 2)  # Move to the end of the file
+            while True:
+                line = file.readline()
+                if line:
+                    logger.debug(f"log line => {line}")
+                    await handle_message(line.strip())
+                else:
+                    await asyncio.sleep(1)
+    except FileNotFoundError:
+        logger.error(f"Log file not found: {file_path}, current working directory {os.getcwd()}")
+    except asyncio.CancelledError:
+        logger.info("File Monitor task cancelled.")
+        raise
+    except Exception as e:
+        logger.error(f"An error occurred while monitoring the log file: {str(e)}")

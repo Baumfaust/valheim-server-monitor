@@ -8,13 +8,14 @@ import threading
 
 from bot.discord_bot import run_bot, ready_discord
 from event_bus import event_bus
+from monitor.log_file_monitor import log_file_monitor
 from monitor.valheim_log_parser import handle_message
 
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
+    level=log_level,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
         logging.FileHandler("app.log"),
@@ -49,15 +50,30 @@ def register_signal_handlers():
         for sig in (signal.SIGTERM, signal.SIGINT):
             loop.add_signal_handler(sig, handle_shutdown_signal)
 
-# def on_exit():
-#     """Called when Python exits (works for PyCharm stop button)."""
-#     handle_shutdown_signal()
-#
-# # Register exit handler for PyCharm stop button
-# atexit.register(on_exit)
+
+def select_log_monitoring():
+    monitor_type = os.getenv('MONITOR_TYPE')
+    unit_name = os.getenv('UNIT_NAME')  # systemd service name
+    log_file = os.getenv('LOG_FILE_PATH')  # log file path
+
+    # Match on the monitor type
+    match monitor_type:
+        case 'journal' if unit_name:
+            from monitor.journal_monitor import journal_monitor
+            return journal_monitor, unit_name
+        case 'file' if log_file:
+            return log_file_monitor, log_file
+        case _:
+            logger.error("Invalid configuration. Please set MONITOR_TYPE and UNIT_NAME, or LOG_FILE_PATH.")
+            exit(1)
+
 
 async def main():
+    monitor, monitor_target = select_log_monitoring()
+    monitor = log_file_monitor
+    monitor_target = "test.log"
     register_signal_handlers()
+
 
     bot_task = asyncio.create_task(run_bot())
 
@@ -66,23 +82,27 @@ async def main():
     await asyncio.gather(ready_discord.wait())
     logger.debug("All subscribers are ready!")
 
-    # Send test message after subscribers are ready
-    start_mes = "Session \"Donnersberg\" with join code 582905 and IP 130.61.112.24:2456 is active with 0 player(s)"
-    player_join = "Console: <color=orange>Erwin</color>: <color=#FFEB04FF>I HAVE ARRIVED!</color>"
+    monitor_task = asyncio.create_task(monitor(monitor_target))
 
-    logger.debug("Sending test message...")
-    await handle_message(start_mes)
-    await handle_message(player_join)
-    logger.debug("Test message sent.")
+
+    # Send test message after subscribers are ready
+    # start_mes = "Session \"Donnersberg\" with join code 582905 and IP 130.61.112.24:2456 is active with 0 player(s)"
+    # player_join = "Console: <color=orange>Erwin</color>: <color=#FFEB04FF>I HAVE ARRIVED!</color>"
+    #
+    # logger.debug("Sending test message...")
+    # await handle_message(start_mes)
+    # await handle_message(player_join)
+    # logger.debug("Test message sent.")
 
     # Wait until shutdown event is triggered
     await shutdown_event.wait()
     logger.info("Cancelling tasks...")
 
+    monitor_task.cancel()
     bot_task.cancel()
 
     # Wait for tasks to cancel gracefully
-    await asyncio.gather(bot_task, return_exceptions=True)
+    await asyncio.gather(bot_task, monitor_task, return_exceptions=True)
     logger.info("Shutdown complete.")
 
 
