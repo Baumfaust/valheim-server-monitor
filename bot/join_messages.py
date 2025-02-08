@@ -1,7 +1,5 @@
 from random import choice
-from random import choice
 
-# Define the messages list once, outside the function
 messages = [
     f"🏹  Prepare to be amazed by **{{player_name}}**'s sword skills... or not!",
     f"🏹  **{{player_name}}** has entered the game and immediately forgot how to craft.",
@@ -54,7 +52,7 @@ messages = [
     f"🏹  Welcome, **{{player_name}}**! Time to see how long the Viking can survive before calling for help."
 ]
 
+
 def random_join_message(player_name: str) -> str:
     message = choice(messages)
     return message.format(player_name=player_name)
-
