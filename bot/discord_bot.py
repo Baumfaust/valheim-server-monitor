@@ -6,6 +6,7 @@ from typing import Final
 import discord
 from dotenv import load_dotenv
 
+from bot.join_messages import random_join_message
 from event_bus import event_bus, Topic
 from monitor.valheim_log_parser import ValheimSession, PlayerJoined
 
@@ -28,7 +29,7 @@ async def send_discord_message(event_data):
             case ValheimSession(session_name, join_code, address, player_count):
                 await default_channel.send(f"🏞️ Server **{session_name}** is online with {player_count} player(s)!")
             case PlayerJoined(player_name):
-                await default_channel.send(f"🏹 **{player_name}** joined the game!")
+                await default_channel.send(random_join_message(player_name))
             case _:
                 logger.warning("⚠Unknown event type")
     else:
