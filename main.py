@@ -1,15 +1,11 @@
 import asyncio
-import atexit
 import logging
 import os
 import signal
 import sys
-import threading
 
 from bot.discord_bot import run_bot, ready_discord
-from event_bus import event_bus
 from monitor.log_file_monitor import log_file_monitor
-from monitor.valheim_log_parser import handle_message
 
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 
@@ -70,10 +66,7 @@ def select_log_monitoring():
 
 async def main():
     monitor, monitor_target = select_log_monitoring()
-    monitor = log_file_monitor
-    monitor_target = "test.log"
     register_signal_handlers()
-
 
     bot_task = asyncio.create_task(run_bot())
 
@@ -83,16 +76,6 @@ async def main():
     logger.debug("All subscribers are ready!")
 
     monitor_task = asyncio.create_task(monitor(monitor_target))
-
-
-    # Send test message after subscribers are ready
-    # start_mes = "Session \"Donnersberg\" with join code 582905 and IP 130.61.112.24:2456 is active with 0 player(s)"
-    # player_join = "Console: <color=orange>Erwin</color>: <color=#FFEB04FF>I HAVE ARRIVED!</color>"
-    #
-    # logger.debug("Sending test message...")
-    # await handle_message(start_mes)
-    # await handle_message(player_join)
-    # logger.debug("Test message sent.")
 
     # Wait until shutdown event is triggered
     await shutdown_event.wait()

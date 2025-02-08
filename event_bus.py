@@ -17,7 +17,6 @@ class EventBus:
         if topic not in self.subscribers:
             self.subscribers[topic] = []
         self.subscribers[topic].append(callback)
-        logger.debug(f"Subscribed to {topic}")
 
     async def publish(self, topic, event_data):
         if topic in self.subscribers:

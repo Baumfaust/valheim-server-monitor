@@ -2,13 +2,14 @@ import asyncio
 import logging
 import os
 
-from monitor.valheim_log_parser import parse_valheim_log, handle_message
+from monitor.valheim_log_parser import handle_message
 
 logger = logging.getLogger(__name__)
 
+
 async def log_file_monitor(file_path: str):
     """Monitors the log file for new events."""
-    logger.info(f"Monitoring log file: {file_path}")
+    logger.info(f"Start monitoring log file: {file_path}")
     try:
         with open(file_path, "r") as file:
             file.seek(0, 2)  # Move to the end of the file

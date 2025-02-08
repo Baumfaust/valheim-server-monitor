@@ -1,10 +1,9 @@
-import os
+import asyncio
 import logging
+import os
 from typing import Final
 
 import discord
-import asyncio
-
 from dotenv import load_dotenv
 
 from event_bus import event_bus, Topic
@@ -21,6 +20,7 @@ client = discord.Client(intents=intents)
 
 ready_discord = asyncio.Event()
 
+
 async def send_discord_message(event_data):
     await client.wait_until_ready()
     if default_channel:
@@ -34,13 +34,16 @@ async def send_discord_message(event_data):
     else:
         logger.debug("No valid channel found!")
 
+
 async def handle_discord_events():
     async def send_event_to_discord(event_data):
         logger.debug(f"received event {event_data}")
         await send_discord_message(event_data)
 
-    event_bus.subscribe(Topic.LOG_EVENT, send_event_to_discord)
-    logger.debug("Discord bot subscribed to events.")
+    topic = Topic.LOG_EVENT
+    event_bus.subscribe(topic, send_event_to_discord)
+    logger.debug(f"Discord bot subscribed to {topic}")
+
 
 @client.event
 async def on_ready():
@@ -59,6 +62,7 @@ async def on_ready():
             break
     await handle_discord_events()
     ready_discord.set()
+
 
 async def run_bot():
     try:

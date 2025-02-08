@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 import logging
+import time
 
 import select
 from systemd import journal
-import time
 
 from monitor.valheim_log_parser import parse_valheim_log
 
 logger = logging.getLogger(__name__)
+
 
 def journal_monitor(unit_name: str):
     logger.info(f"Monitoring systemd journal for unit: {unit_name}")
@@ -17,17 +18,18 @@ def journal_monitor(unit_name: str):
     j.add_match(_SYSTEMD_USER_UNIT=unit_name)
 
     j.seek_tail()  # Start from the end
-    j.get_previous() # Important: Move to the last entry to prevent getting the same entry again
+    j.get_previous()  # Important: Move to the last entry to prevent getting the same entry again
 
     p = select.poll()
     p.register(j, j.get_events())
 
     while True:
         if p.poll():
-            if j.process() == journal.APPEND: # Check if new entries are available
+            if j.process() == journal.APPEND:  # Check if new entries are available
                 for entry in j:
                     parse_valheim_log(f"{entry['MESSAGE']}")
         time.sleep(0.1)
+
 
 if __name__ == "__main__":
     try:

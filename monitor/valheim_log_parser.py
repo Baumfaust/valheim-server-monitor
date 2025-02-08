@@ -3,16 +3,15 @@ import re
 from dataclasses import dataclass
 
 from event_bus import event_bus, Topic
+
 logger = logging.getLogger(__name__)
 
 
-# Define a base class for log entries
 @dataclass(frozen=True)
 class LogEntry:
     pass
 
 
-# Dataclass for Valheim session start messages
 @dataclass(frozen=True)
 class ValheimSession(LogEntry):
     """Holds information parsed from a Valheim server log message."""
@@ -23,10 +22,10 @@ class ValheimSession(LogEntry):
     player_count: int
 
 
-# Dataclass for other potential messages (example)
 @dataclass(frozen=True)
 class PlayerJoined(LogEntry):
     player_name: str
+
 
 def parse_session_message(entry_message: str):
     pattern = (
@@ -42,6 +41,7 @@ def parse_session_message(entry_message: str):
         return ValheimSession(session_name, join_code, address, player_count)
     return None
 
+
 # Parser for player join messages
 def parse_player_join_message(entry_message: str):
     # This pattern matches:
@@ -53,12 +53,14 @@ def parse_player_join_message(entry_message: str):
         return PlayerJoined(player_name)
     return None
 
+
 # List of parser functions for extensibility
 _log_parsers = [
     parse_session_message,
     parse_player_join_message,
     # Additional parsers can be added here
 ]
+
 
 def parse_valheim_log(entry_message: str) -> LogEntry | None:
     """
@@ -71,7 +73,8 @@ def parse_valheim_log(entry_message: str) -> LogEntry | None:
             return result
     return None
 
+
 async def handle_message(entry_message):
     if log_entry := parse_valheim_log(entry_message):
-            logger.debug(f"pushing event {log_entry}")
-            await event_bus.publish(Topic.LOG_EVENT, log_entry)
+        logger.debug(f"pushing event {log_entry}")
+        await event_bus.publish(Topic.LOG_EVENT, log_entry)
