@@ -7,7 +7,7 @@ from monitor.valheim_log_parser import (
     handle_message,
     parse_player_join_message,
     parse_session_message,
-    parse_valheim_log,
+    parse_valheim_log, ServerStarted, sever_started_version_message,
 )
 
 
@@ -24,6 +24,15 @@ def test_parse_session_message():
     assert result.address == "192.168.1.100:2456"
     assert result.player_count == 10
 
+
+def test_sever_started_version_message():
+    log_message = '02/09/2025 23:01:19: Valheim version: l-0.219.16 (network version 32)'
+
+    result = sever_started_version_message(log_message)
+
+    assert result is not None
+    assert isinstance(result, ServerStarted)
+    assert result.valheim_version == "0.219.16"
 
 def test_parse_player_join_message():
     log_message = 'Console: <color=orange>Erwin</color>: <color=#FFEB04FF>I HAVE ARRIVED!</color>'
