@@ -28,13 +28,15 @@ async def journal_monitor(unit_name):
 
         p = select.poll()
         p.register(j, j.get_events())
-
+        line_number = 1
         while True:
             await asyncio.to_thread(p.poll)
             if j.process() == journal.APPEND: # Check if new entries are available
                 for entry in j:
-                    print(f"{entry['MESSAGE']}")
-                    parse_valheim_log(f"{entry['MESSAGE']}")
+                    line = entry['MESSAGE']
+                    print(f"{line_number} => {line}")
+                    parse_valheim_log(f"{line}")
+                    line_number += 1
             await asyncio.sleep(0.1)
 
     except KeyboardInterrupt:
