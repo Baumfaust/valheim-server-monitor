@@ -24,10 +24,9 @@ def journal_monitor(unit_name: str):
     p.register(j, j.get_events())
 
     while True:
-        if p.poll():
-            if j.process() == journal.APPEND:  # Check if new entries are available
-                for entry in j:
-                    parse_valheim_log(f"{entry['MESSAGE']}")
+        if p.poll() and j.process() == journal.APPEND:  # Check if new entries are available
+            for entry in j:
+                parse_valheim_log(f"{entry['MESSAGE']}")
         time.sleep(0.1)
 
 

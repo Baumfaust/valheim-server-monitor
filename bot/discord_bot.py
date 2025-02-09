@@ -27,7 +27,9 @@ async def send_discord_message(event_data):
     if default_channel:
         match event_data:
             case ValheimSession(session_name, join_code, address, player_count):
-                await default_channel.send(f"🏞️ Server **{session_name}** is online with {player_count} player(s)!")
+                await default_channel.send(f"🏞️ Server **{session_name}** with join code **{join_code}** "
+                                           f"and IP **{address}** is online "
+                                           f"with {player_count} player(s)!")
             case PlayerJoined(player_name):
                 await default_channel.send(random_join_message(player_name))
             case _:

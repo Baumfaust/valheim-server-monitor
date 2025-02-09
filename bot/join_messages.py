@@ -41,7 +41,8 @@ messages = [
     "🏹  **{player_name}** has arrived! Let the unorganized chaos begin!",
     "🏹  Guess who’s back? **{player_name}**, the Berserker who can’t craft anything without help.",
     "🏹  **{player_name}** just joined, and the Viking’s already asking where the nearest swamp is.",
-    "🏹  **{player_name}** has entered Valheim. Time to see how many times the Berserker will accidentally hit the wrong thing.",
+    "🏹  **{player_name}** has entered Valheim. Time to see how many times the Berserker will accidentally "
+    "hit the wrong thing.",
     "🏹  **{player_name}** is in! Someone give the Viking a map… they’re going to need it.",
     "🏹  **{player_name}** just logged in. Time to find out if the Berserker remembers what the workbench is.",
     "🏹  **{player_name}** has joined the game, probably with no idea how to survive the first night.",
