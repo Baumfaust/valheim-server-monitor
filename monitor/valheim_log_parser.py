@@ -57,8 +57,7 @@ def sever_started_version_message(entry_message: str):
 # Parser for player join messages
 def parse_player_join_message(entry_message: str):
     # This pattern matches:
-    # "Console: <color=orange>Erwin</color>: <color=#FFEB04FF>I HAVE ARRIVED!</color>"
-    pattern = r"Console: <color=orange>(.*?)</color>: <color=#FFEB04FF>I HAVE ARRIVED!</color>"
+    pattern = r"<color=orange>(.*?)</color>: <color=#FFEB04FF>"
     match = re.search(pattern, entry_message)
     if match:
         player_name = match.group(1)
