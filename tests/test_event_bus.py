@@ -1,89 +1,65 @@
-import asyncio
 
 import pytest
 
-from event_bus import EventBus
+from event_bus import EventBus, Topic
 
 
-@pytest.mark.asyncio(loop_scope='function')
-async def test_event_bus_publish_and_subscribe():
+@pytest.mark.asyncio
+async def test_single_subscription():
+    """Test that a single subscriber receives the published event."""
     event_bus = EventBus()
+    received_events = []
 
-    # A flag to check if the event is received
-    event_received = []
+    async def mock_callback(event_data):
+        received_events.append(event_data)
 
-    # A simple callback function for subscribers
-    async def event_callback(data):
-        event_received.append(data)
+    event_bus.subscribe(Topic.LOG_EVENT, mock_callback)
+    await event_bus.publish(Topic.LOG_EVENT, "Test Event")
 
-    # Subscribe to an event
-    event_bus.subscribe("test_event", event_callback)
+    assert received_events == ["Test Event"], "Subscriber did not receive the event"
 
-    # Publish the event
-    await event_bus.publish("test_event", "event_data")
-
-    # Simulate the event bus listening in a task
-    listener_task = asyncio.create_task(event_bus.start_listening())
-
-    # Wait for the event to be processed
-    await asyncio.sleep(0.1)
-
-    # Check if the event data was received by the callback
-    assert "event_data" in event_received
-
-    # Cancel the listener task as we are done
-    listener_task.cancel()
-
-
-@pytest.mark.asyncio(loop_scope='function')
-async def test_event_bus_multiple_subscribers():
+@pytest.mark.asyncio
+async def test_multiple_subscriptions():
+    """Test that multiple subscribers receive the same event."""
     event_bus = EventBus()
+    received_events_1 = []
+    received_events_2 = []
 
-    # Flags to check if events are received by multiple subscribers
-    subscriber1_received = []
-    subscriber2_received = []
+    async def callback_1(event_data):
+        received_events_1.append(event_data)
 
-    # Subscriber 1 callback function
-    async def subscriber1_callback(data):
-        subscriber1_received.append(data)
+    async def callback_2(event_data):
+        received_events_2.append(event_data)
 
-    # Subscriber 2 callback function
-    async def subscriber2_callback(data):
-        subscriber2_received.append(data)
+    event_bus.subscribe(Topic.LOG_EVENT, callback_1)
+    event_bus.subscribe(Topic.LOG_EVENT, callback_2)
 
-    # Subscribe both callbacks to the same event
-    event_bus.subscribe("test_event", subscriber1_callback)
-    event_bus.subscribe("test_event", subscriber2_callback)
+    await event_bus.publish(Topic.LOG_EVENT, "Test Event")
 
-    # Publish the event
-    await event_bus.publish("test_event", "event_data")
+    assert received_events_1 == ["Test Event"], "First subscriber did not receive the event"
+    assert received_events_2 == ["Test Event"], "Second subscriber did not receive the event"
 
-    # Simulate the event bus listening in a task
-    listener_task = asyncio.create_task(event_bus.start_listening())
-
-    # Wait for the event to be processed
-    await asyncio.sleep(0.1)
-
-    # Assert that both subscribers received the event
-    assert "event_data" in subscriber1_received
-    assert "event_data" in subscriber2_received
-
-    # Cancel the listener task as we are done
-    listener_task.cancel()
-
-
-@pytest.mark.asyncio(loop_scope='function')
-async def test_event_bus_no_subscribers():
+@pytest.mark.asyncio
+async def test_no_event_for_unsubscribed_topic():
+    """Test that an event published to an unregistered topic does not trigger callbacks."""
     event_bus = EventBus()
+    received_events = []
 
-    # Publish an event with no subscribers
-    await event_bus.publish("test_event", "event_data")
+    async def mock_callback(event_data):
+        received_events.append(event_data)
 
-    # Simulate the event bus listening in a task
-    listener_task = asyncio.create_task(event_bus.start_listening())
+    event_bus.subscribe(Topic.LOG_EVENT, mock_callback)
 
-    # Since there are no subscribers, it should not receive anything
-    await asyncio.sleep(0.1)
+    # Publish to a non-existent topic
+    await event_bus.publish("OTHER_TOPIC", "This should not be received")
 
-    # Cancel the listener task as we are done
-    listener_task.cancel()
+    assert not received_events, "Event was incorrectly received for an unsubscribed topic"
+
+@pytest.mark.asyncio
+async def test_no_subscribers():
+    """Test that publishing an event with no subscribers does not cause errors."""
+    event_bus = EventBus()
+    try:
+        await event_bus.publish(Topic.LOG_EVENT, "Test Event")
+    except Exception as e:
+        pytest.fail(f"Publishing with no subscribers raised an error: {e}")

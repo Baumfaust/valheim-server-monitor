@@ -6,6 +6,7 @@ import sys
 
 from bot.discord_bot import ready_discord, run_bot
 from monitor.log_file_monitor import log_file_monitor
+from utils.venv_utils import check_venv
 
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 
@@ -90,4 +91,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    check_venv()
     asyncio.run(main())
