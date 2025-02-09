@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 from bot.join_messages import random_join_message
 from event_bus import Topic, event_bus
-from monitor.valheim_log_parser import PlayerJoined, ValheimSession
+from monitor.valheim_log_parser import PlayerJoined, ValheimSession, ServerStarted
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +30,12 @@ async def send_discord_message(event_data):
                 await default_channel.send(f"🏞️ Server **{session_name}** with join code **{join_code}** "
                                            f"and IP **{address}** is online "
                                            f"with {player_count} player(s)!")
+            case ServerStarted(valheim_version):
+                await default_channel.send(f"🏞️ Valheim server started with version **{valheim_version}**")
             case PlayerJoined(player_name):
                 await default_channel.send(random_join_message(player_name))
             case _:
-                logger.warning("⚠Unknown event type")
+                logger.warning("Unknown event type")
     else:
         logger.debug("No valid channel found!")
 

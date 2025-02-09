@@ -21,6 +21,10 @@ class ValheimSession(LogEntry):
     address: str
     player_count: int
 
+@dataclass(frozen=True)
+class ServerStarted(LogEntry):
+    valheim_version: str
+
 
 @dataclass(frozen=True)
 class PlayerJoined(LogEntry):
@@ -41,6 +45,14 @@ def parse_session_message(entry_message: str):
         return ValheimSession(session_name, join_code, address, player_count)
     return None
 
+def sever_started_version_message(entry_message: str):
+    # This pattern matches:
+    pattern = r"Valheim version:.*(\d+\.\d+\.\d+)"
+    match = re.search(pattern, entry_message)
+    if match:
+        valheim_version = match.group(1)
+        return ServerStarted(valheim_version)
+    return None
 
 # Parser for player join messages
 def parse_player_join_message(entry_message: str):
@@ -56,6 +68,7 @@ def parse_player_join_message(entry_message: str):
 
 # List of parser functions for extensibility
 _log_parsers = [
+    sever_started_version_message,
     parse_session_message,
     parse_player_join_message,
     # Additional parsers can be added here
