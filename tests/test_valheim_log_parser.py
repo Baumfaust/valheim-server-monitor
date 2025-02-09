@@ -5,9 +5,10 @@ from monitor.valheim_log_parser import (
     PlayerJoined,
     ValheimSession,
     handle_message,
-    parse_player_join_message,
+    parse_player_joined_message,
     parse_session_message,
-    parse_valheim_log, ServerStarted, sever_started_version_message,
+    parse_valheim_log, ServerStarted, sever_started_version_message, parse_player_died_message, PlayerDied,
+    sever_stopped_message, ServerStopped,
 )
 
 
@@ -34,17 +35,40 @@ def test_sever_started_version_message():
     assert isinstance(result, ServerStarted)
     assert result.valheim_version == "0.219.16"
 
-def test_parse_player_join_message():
+def test_sever_stopped_message():
+    log_message = '02/09/2025 23:26:30: Game - OnApplicationQuit'
+
+    result = sever_stopped_message(log_message)
+
+    assert result is not None
+    assert isinstance(result, ServerStopped)
+
+def test_parse_player_joined_message_en():
     log_message = 'Console: <color=orange>Erwin</color>: <color=#FFEB04FF>I HAVE ARRIVED!</color>'
 
-    result = parse_player_join_message(log_message)
+    result = parse_player_joined_message(log_message)
 
     assert result is not None
     assert isinstance(result, PlayerJoined)
     assert result.player_name == "Erwin"
 
+def test_parse_player_joined_message_de():
+    log_message = 'Console: <color=orange>Rene</color>: <color=#FFEB04FF>ICH BIN ANGEKOMMEN!</color>'
 
+    result = parse_player_joined_message(log_message)
 
+    assert result is not None
+    assert isinstance(result, PlayerJoined)
+    assert result.player_name == "Rene"
+
+def test_parse_player_joined_message():
+    log_message = '02/04/2025 19:47:49: Got character ZDOID from Rene : 0:0'
+
+    result = parse_player_died_message(log_message)
+
+    assert result is not None
+    assert isinstance(result, PlayerDied)
+    assert result.player_name == "Rene"
 
 def test_parse_valheim_log_session():
     log_message = ('Session "MyValheimSession" with join code 12345 and IP 192.168.1.100:2456 '

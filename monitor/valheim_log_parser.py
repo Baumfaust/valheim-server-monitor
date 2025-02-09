@@ -25,9 +25,16 @@ class ValheimSession(LogEntry):
 class ServerStarted(LogEntry):
     valheim_version: str
 
+@dataclass(frozen=True)
+class ServerStopped(LogEntry):
+    pass
 
 @dataclass(frozen=True)
 class PlayerJoined(LogEntry):
+    player_name: str
+
+@dataclass(frozen=True)
+class PlayerDied(LogEntry):
     player_name: str
 
 
@@ -54,8 +61,16 @@ def sever_started_version_message(entry_message: str):
         return ServerStarted(valheim_version)
     return None
 
+def sever_stopped_message(entry_message: str):
+    # This pattern matches:
+    pattern = r"OnApplicationQuit"
+    match = re.search(pattern, entry_message)
+    if match:
+        return ServerStopped()
+    return None
+
 # Parser for player join messages
-def parse_player_join_message(entry_message: str):
+def parse_player_joined_message(entry_message: str):
     # This pattern matches:
     pattern = r"<color=orange>(.*?)</color>: <color=#FFEB04FF>"
     match = re.search(pattern, entry_message)
@@ -64,12 +79,20 @@ def parse_player_join_message(entry_message: str):
         return PlayerJoined(player_name)
     return None
 
+def parse_player_died_message(entry_message: str):
+    # This pattern matches:
+    pattern = r"Got character ZDOID from (\w+) : 0:0"
+    match = re.search(pattern, entry_message)
+    if match:
+        player_name = match.group(1)
+        return PlayerDied(player_name)
+    return None
 
 # List of parser functions for extensibility
 _log_parsers = [
     sever_started_version_message,
     parse_session_message,
-    parse_player_join_message,
+    parse_player_joined_message,
     # Additional parsers can be added here
 ]
 
