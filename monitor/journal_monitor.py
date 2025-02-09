@@ -13,6 +13,7 @@ import time
 
 from monitor.valheim_log_parser import parse_valheim_log
 
+logger = logging.getLogger(__name__)
 
 async def journal_monitor(unit_name):
     try:
@@ -34,12 +35,12 @@ async def journal_monitor(unit_name):
             if j.process() == journal.APPEND: # Check if new entries are available
                 for entry in j:
                     line = entry['MESSAGE']
-                    print(f"{line_number} => {line}")
+                    logger.debug(f"{line_number} => {line}")
                     parse_valheim_log(f"{line}")
                     line_number += 1
             await asyncio.sleep(0.1)
 
     except KeyboardInterrupt:
-        print("\n👋 Exiting log monitor...")
+        logger.debug("Exiting log monitor...")
     except Exception as e:
-        print(f"❌ Error reading systemd logs: {e}")
+        logger.debug(f"Error reading systemd logs: {e}")
