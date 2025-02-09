@@ -89,5 +89,5 @@ def parse_valheim_log(entry_message: str) -> LogEntry | None:
 
 async def handle_message(entry_message):
     if log_entry := parse_valheim_log(entry_message):
-        logger.debug(f"pushing event {log_entry}")
+        logger.info(f"pushing event {log_entry}")
         await event_bus.publish(Topic.LOG_EVENT, log_entry)

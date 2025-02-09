@@ -42,7 +42,7 @@ async def send_discord_message(event_data):
 
 async def handle_discord_events():
     async def send_event_to_discord(event_data):
-        logger.debug(f"received event {event_data}")
+        logger.info(f"received event {event_data}")
         await send_discord_message(event_data)
 
     topic = Topic.LOG_EVENT

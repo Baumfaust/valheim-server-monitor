@@ -11,7 +11,7 @@ from systemd import journal # pip3 install systemd-python
 import select
 import time
 
-from monitor.valheim_log_parser import parse_valheim_log
+from monitor.valheim_log_parser import parse_valheim_log, handle_message
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ async def journal_monitor(unit_name):
                 for entry in j:
                     line = entry['MESSAGE']
                     logger.debug(f"{line_number} => {line}")
-                    parse_valheim_log(f"{line}")
+                    await handle_message(line.strip())
                     line_number += 1
             await asyncio.sleep(0.1)
 
