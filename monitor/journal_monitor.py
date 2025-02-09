@@ -30,12 +30,12 @@ async def journal_monitor(unit_name):
         p.register(j, j.get_events())
 
         while True:
-            if p.poll():
-                if j.process() == journal.APPEND: # Check if new entries are available
-                    for entry in j:
-                        print(f"{entry['MESSAGE']}")
-                        parse_valheim_log(f"{entry['MESSAGE']}")
-            time.sleep(0.1)  # Avoid high CPU usage when no events
+            await asyncio.to_thread(p.poll)
+            if j.process() == journal.APPEND: # Check if new entries are available
+                for entry in j:
+                    print(f"{entry['MESSAGE']}")
+                    parse_valheim_log(f"{entry['MESSAGE']}")
+            await asyncio.sleep(0.1)
 
     except KeyboardInterrupt:
         print("\n👋 Exiting log monitor...")
