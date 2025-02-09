@@ -4,7 +4,7 @@ import pytest
 from event_bus import EventBus, Topic
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='function')
 async def test_single_subscription():
     """Test that a single subscriber receives the published event."""
     event_bus = EventBus()
@@ -18,7 +18,7 @@ async def test_single_subscription():
 
     assert received_events == ["Test Event"], "Subscriber did not receive the event"
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='function')
 async def test_multiple_subscriptions():
     """Test that multiple subscribers receive the same event."""
     event_bus = EventBus()
@@ -39,7 +39,7 @@ async def test_multiple_subscriptions():
     assert received_events_1 == ["Test Event"], "First subscriber did not receive the event"
     assert received_events_2 == ["Test Event"], "Second subscriber did not receive the event"
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='function')
 async def test_no_event_for_unsubscribed_topic():
     """Test that an event published to an unregistered topic does not trigger callbacks."""
     event_bus = EventBus()
@@ -55,7 +55,7 @@ async def test_no_event_for_unsubscribed_topic():
 
     assert not received_events, "Event was incorrectly received for an unsubscribed topic"
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='function')
 async def test_no_subscribers():
     """Test that publishing an event with no subscribers does not cause errors."""
     event_bus = EventBus()

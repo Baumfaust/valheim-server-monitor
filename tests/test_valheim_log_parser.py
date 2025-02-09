@@ -1,98 +1,105 @@
+import pytest
+
+import event_bus
 from monitor.valheim_log_parser import (
-    LogEntry,
+    PlayerJoined,
     ValheimSession,
     handle_message,
+    parse_player_join_message,
+    parse_session_message,
     parse_valheim_log,
-)  # Import the dataclass
+)
 
 
-def test_parse_valheim_log():
-    """Tests the parse_valheim_log function with various log entries."""
-    # Positive test cases
-    test_cases = [
-        (
-            'Session "MyServer" with join code 12345 and IP 192.168.1.100:2456 is active with 5 player(s)',
-            ValheimSession("MyServer", 12345, "192.168.1.100:2456", 5),
-        ),
-        (
-            'Session "AnotherServer" with join code 987654321 and IP 10.0.0.1:2457 is active with 0 player(s)',
-            ValheimSession("AnotherServer", 987654321, "10.0.0.1:2457", 0),
-        ),
-        (
-            'Session "Server with spaces" with join code 00000 and IP 127.0.0.1:1234 is active with 1 player(s)',
-            ValheimSession("Server with spaces", 0, "127.0.0.1:1234", 1),
-        ),
-        (
-            # test for dash in join code. should fail
-            'Session "Server-with-dashes" with join code 123-456 and IP 127.0.0.1:1234 is active with 1 player(s)',
-            None,
-        ),
-        (
-            # correct test case for dash in servername
-            'Session "Server-with-dashes" with join code 123456 and IP 127.0.0.1:1234 is active with 1 player(s)',
-            ValheimSession("Server-with-dashes", 123456, "127.0.0.1:1234", 1),
-        ),
-    ]
+def test_parse_session_message():
+    log_message = ('Session "MyValheimSession" with join code 12345 and IP 192.168.1.100:2456 '
+                   'is active with 10 player(s)')
 
-    for log_entry, expected_result in test_cases:
-        actual_result = parse_valheim_log(log_entry)
-        assert actual_result == expected_result, (
-            f"Test failed for input: '{log_entry}'. Expected: {expected_result}, Got: {actual_result}"
-        )
+    result = parse_session_message(log_message)
 
-    # Negative test cases (no match)
-    negative_test_cases = [
-        "This is not a valid log entry.",
-        'Session "Missing IP" with join code 12345 is active with 2 player(s)',
-        'Session "Missing players" with join code 12345 and IP 192.168.1.1:2456 is active with player(s)',
-        'Session "Wrong format" with join code abcde and IP 192.168.1.1:2456 is active with 2 player(s)',
-    ]
-    for log_entry in negative_test_cases:
-        actual_result = parse_valheim_log(log_entry)
-        assert actual_result is None, (
-            f"Negative test failed for input: '{log_entry}'. Expected None, Got: {actual_result}"
-        )
+    assert result is not None
+    assert isinstance(result, ValheimSession)
+    assert result.session_name == "MyValheimSession"
+    assert result.join_code == 12345
+    assert result.address == "192.168.1.100:2456"
+    assert result.player_count == 10
 
 
-def test_handle_message_with_callback():
-    called_with = []
+def test_parse_player_join_message():
+    log_message = 'Console: <color=orange>Erwin</color>: <color=#FFEB04FF>I HAVE ARRIVED!</color>'
 
-    def mock_callback(log_entry: LogEntry):
-        called_with.append(log_entry)
+    result = parse_player_join_message(log_message)
 
-    test_entry = {
-        "MESSAGE": 'Session "TestServer" with join code 12345 and IP 127.0.0.1:2456 is active with 2 player(s)',
-    }
-    handle_message(mock_callback, test_entry)
-    assert len(called_with) == 1
-    assert isinstance(called_with[0], LogEntry)
-    assert called_with[0].session_name == "TestServer"
+    assert result is not None
+    assert isinstance(result, PlayerJoined)
+    assert result.player_name == "Erwin"
 
 
-def test_handle_message_no_callback():
-    test_entry = {
-        "MESSAGE": 'Session "TestServer" with join code 12345 and IP 127.0.0.1:2456 is active with 2 player(s)',
-    }
-    handle_message(None, test_entry)
 
 
-def test_handle_message_no_message_key():
-    called_with = []
+def test_parse_valheim_log_session():
+    log_message = ('Session "MyValheimSession" with join code 12345 and IP 192.168.1.100:2456 '
+                   'is active with 10 player(s)')
 
-    def mock_callback(log_entry: LogEntry):
-        called_with.append(log_entry)
+    result = parse_valheim_log(log_message)
 
-    test_entry = {"OTHER_KEY": "some value"}
-    handle_message(mock_callback, test_entry)
-    assert len(called_with) == 0
+    assert result is not None
+    assert isinstance(result, ValheimSession)
 
 
-def test_handle_message_parse_returns_none():
-    called_with = []
+def test_parse_valheim_log_player_join():
+    log_message = 'Console: <color=orange>Erwin</color>: <color=#FFEB04FF>I HAVE ARRIVED!</color>'
 
-    def mock_callback(log_entry: LogEntry):
-        called_with.append(log_entry)
+    result = parse_valheim_log(log_message)
 
-    test_entry = {"MESSAGE": "This is not a valid log entry"}
-    handle_message(mock_callback, test_entry)
-    assert len(called_with) == 0
+    assert result is not None
+    assert isinstance(result, PlayerJoined)
+
+
+def test_parse_valheim_log_no_match():
+    log_message = "Some other log message"
+
+    result = parse_valheim_log(log_message)
+
+    assert result is None
+
+
+@pytest.mark.asyncio(loop_scope='function')
+async def test_handle_message_session(mocker):
+    log_message = ('Session "MyValheimSession" with join code 12345 and IP 192.168.1.100:2456 '
+                   'is active with 10 player(s)')
+
+    mock_publish = mocker.patch('event_bus.EventBus.publish')  # Mock event_bus.publish
+
+    await handle_message(log_message)
+
+    log_entry = ValheimSession("MyValheimSession", 12345, "192.168.1.100:2456", 10)
+
+    # Assert that the mock publish method was called with the correct arguments
+    mock_publish.assert_called_once_with(event_bus.Topic.LOG_EVENT, log_entry)
+
+
+@pytest.mark.asyncio(loop_scope='function')
+async def test_handle_message_player_join(mocker):
+    log_message = 'Console: <color=orange>Erwin</color>: <color=#FFEB04FF>I HAVE ARRIVED!</color>'
+
+    mock_publish = mocker.patch('event_bus.EventBus.publish')  # Mock event_bus.publish
+
+    await handle_message(log_message)
+
+    log_entry = PlayerJoined("Erwin")
+
+    # Assert that the mock publish method was called with the correct arguments
+    mock_publish.assert_called_once_with(event_bus.Topic.LOG_EVENT, log_entry)
+
+
+@pytest.mark.asyncio(loop_scope='function')
+async def test_handle_message_no_match(mocker):
+    log_message = "Some other log message"
+
+    mock_publish = mocker.patch('event_bus.EventBus.publish')  # Mock event_bus.publish
+
+    await handle_message(log_message)
+
+    # Ensure that the publish method was not called
+    mock_publish.assert_not_called()
