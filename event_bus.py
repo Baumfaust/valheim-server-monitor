@@ -1,27 +1,27 @@
-import asyncio
+import logging
+from enum import Enum
+
+logger = logging.getLogger(__name__)
+
+
+class Topic(Enum):
+    LOG_EVENT = 1
 
 
 class EventBus:
     def __init__(self):
-        self.queue = asyncio.Queue()
         self.subscribers = {}
 
-    async def publish(self, event_type, data):
-        """Publish an event"""
-        await self.queue.put((event_type, data))
+    def subscribe(self, topic: Topic, callback):
+        if topic not in self.subscribers:
+            self.subscribers[topic] = []
+        self.subscribers[topic].append(callback)
 
-    def subscribe(self, event_type, callback):
-        """Subscribe to an event"""
-        if event_type not in self.subscribers:
-            self.subscribers[event_type] = []
-        self.subscribers[event_type].append(callback)
+    async def publish(self, topic, event_data):
+        if topic in self.subscribers:
+            for callback in self.subscribers[topic]:
+                await callback(event_data)
+                logger.debug(f"Published {event_data} to {topic} ")
 
-    async def start_listening(self):
-        """Continuously listen for new events"""
-        while True:
-            event_type, data = await self.queue.get()
-            if event_type in self.subscribers:
-                for callback in self.subscribers[event_type]:
-                    await callback(data)
 
 event_bus = EventBus()
