@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import logging
+import select
 import time
 
-import select
 from systemd import journal
 
 from monitor.valheim_log_parser import parse_valheim_log

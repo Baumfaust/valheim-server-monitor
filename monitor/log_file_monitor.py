@@ -11,7 +11,7 @@ async def log_file_monitor(file_path: str):
     """Monitors the log file for new events."""
     logger.info(f"Start monitoring log file: {file_path}")
     try:
-        with open(file_path, "r") as file:
+        with open(file_path) as file:
             file.seek(0, 2)  # Move to the end of the file
             while True:
                 line = file.readline()

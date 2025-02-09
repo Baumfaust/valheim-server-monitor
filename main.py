@@ -4,7 +4,7 @@ import os
 import signal
 import sys
 
-from bot.discord_bot import run_bot, ready_discord
+from bot.discord_bot import ready_discord, run_bot
 from monitor.log_file_monitor import log_file_monitor
 
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()

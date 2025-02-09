@@ -7,8 +7,8 @@ import discord
 from dotenv import load_dotenv
 
 from bot.join_messages import random_join_message
-from event_bus import event_bus, Topic
-from monitor.valheim_log_parser import ValheimSession, PlayerJoined
+from event_bus import Topic, event_bus
+from monitor.valheim_log_parser import PlayerJoined, ValheimSession
 
 logger = logging.getLogger(__name__)
 
