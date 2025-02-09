@@ -45,7 +45,7 @@ All components communicate via an internal async event bus, ensuring that messag
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/valheim-server-monitor.git
+git clone https://github.com/Baumfaust/valheim-server-monitor.git
 cd valheim-server-monitor
 ```
 
