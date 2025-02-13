@@ -21,9 +21,20 @@ class ValheimSession(LogEntry):
     address: str
     player_count: int
 
+@dataclass(frozen=True)
+class ServerStarted(LogEntry):
+    valheim_version: str
+
+@dataclass(frozen=True)
+class ServerStopped(LogEntry):
+    pass
 
 @dataclass(frozen=True)
 class PlayerJoined(LogEntry):
+    player_name: str
+
+@dataclass(frozen=True)
+class PlayerDied(LogEntry):
     player_name: str
 
 
@@ -41,23 +52,47 @@ def parse_session_message(entry_message: str):
         return ValheimSession(session_name, join_code, address, player_count)
     return None
 
+def sever_started_version_message(entry_message: str):
+    # This pattern matches:
+    pattern = r"Valheim version:.*(\d+\.\d+\.\d+)"
+    match = re.search(pattern, entry_message)
+    if match:
+        valheim_version = match.group(1)
+        return ServerStarted(valheim_version)
+    return None
+
+def sever_stopped_message(entry_message: str):
+    # This pattern matches:
+    pattern = r"OnApplicationQuit"
+    match = re.search(pattern, entry_message)
+    if match:
+        return ServerStopped()
+    return None
 
 # Parser for player join messages
-def parse_player_join_message(entry_message: str):
+def parse_player_joined_message(entry_message: str):
     # This pattern matches:
-    # "Console: <color=orange>Erwin</color>: <color=#FFEB04FF>I HAVE ARRIVED!</color>"
-    pattern = r"Console: <color=orange>(.*?)</color>: <color=#FFEB04FF>I HAVE ARRIVED!</color>"
+    pattern = r"<color=orange>(.*?)</color>: <color=#FFEB04FF>"
     match = re.search(pattern, entry_message)
     if match:
         player_name = match.group(1)
         return PlayerJoined(player_name)
     return None
 
+def parse_player_died_message(entry_message: str):
+    # This pattern matches:
+    pattern = r"Got character ZDOID from (\w+) : 0:0"
+    match = re.search(pattern, entry_message)
+    if match:
+        player_name = match.group(1)
+        return PlayerDied(player_name)
+    return None
 
 # List of parser functions for extensibility
 _log_parsers = [
+    sever_started_version_message,
     parse_session_message,
-    parse_player_join_message,
+    parse_player_joined_message,
     # Additional parsers can be added here
 ]
 
@@ -76,5 +111,5 @@ def parse_valheim_log(entry_message: str) -> LogEntry | None:
 
 async def handle_message(entry_message):
     if log_entry := parse_valheim_log(entry_message):
-        logger.debug(f"pushing event {log_entry}")
+        logger.info(f"pushing event {log_entry}")
         await event_bus.publish(Topic.LOG_EVENT, log_entry)
