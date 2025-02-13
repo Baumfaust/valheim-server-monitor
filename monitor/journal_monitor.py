@@ -1,17 +1,11 @@
 #!/usr/bin/env python3
-import logging
-
 import asyncio
+import logging
 import select
-import time
 
-from systemd import journal # pip3 install systemd-python
+from systemd import journal  # pip3 install systemd-python
 
-
-import select
-import time
-
-from monitor.valheim_log_parser import parse_valheim_log, handle_message
+from monitor.valheim_log_parser import handle_message
 
 logger = logging.getLogger(__name__)
 

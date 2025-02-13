@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 from bot.join_messages import random_join_message
 from event_bus import Topic, event_bus
-from monitor.valheim_log_parser import PlayerJoined, ValheimSession, ServerStarted, PlayerDied, ServerStopped
+from monitor.valheim_log_parser import PlayerDied, PlayerJoined, ServerStarted, ServerStopped, ValheimSession
 
 logger = logging.getLogger(__name__)
 
