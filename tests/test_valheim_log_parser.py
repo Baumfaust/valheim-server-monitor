@@ -81,6 +81,8 @@ def test_parse_player_died_message():
 def test_parse_player_left_message():
     session_message = '02/14/2025 21:09:48: Got character ZDOID from Baumfaust : 1470032995:3'
     left_message = '02/14/2025 21:07:48: Destroying abandoned non persistent zdo 1470032995:743 owner 1470032995'
+
+    parse_player_session_id_message(session_message)
     
     left_result = parse_player_left_message(left_message)
 
