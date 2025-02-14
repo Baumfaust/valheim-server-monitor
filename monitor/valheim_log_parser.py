@@ -110,7 +110,8 @@ def parse_player_left_message(entry_message: str):
     match = re.search(pattern, entry_message)
     if match:
         player_session_id = match.group(1)
-        player_name = next((name for name, session in _player_session_ids.items() if session.startswith(player_session_id)), None)
+        player_name = next((name for name, session in _player_session_ids.items()
+                            if session.startswith(player_session_id)), None)
 
         if player_name:
             del _player_session_ids[player_name]
