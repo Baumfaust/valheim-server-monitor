@@ -4,12 +4,15 @@ import event_bus
 from monitor.valheim_log_parser import (
     PlayerDied,
     PlayerJoined,
+    PlayerLeft,
     ServerStarted,
     ServerStopped,
     ValheimSession,
     handle_message,
     parse_player_died_message,
     parse_player_joined_message,
+    parse_player_left_message,
+    parse_player_session_id_message,
     parse_session_message,
     parse_valheim_log,
     sever_started_version_message,
@@ -58,22 +61,35 @@ def test_parse_player_joined_message_en():
     assert result.player_name == "Erwin"
 
 def test_parse_player_joined_message_de():
-    log_message = 'Console: <color=orange>Rene</color>: <color=#FFEB04FF>ICH BIN ANGEKOMMEN!</color>'
+    log_message = 'Console: <color=orange>Baumfaust</color>: <color=#FFEB04FF>ICH BIN ANGEKOMMEN!</color>'
 
     result = parse_player_joined_message(log_message)
 
     assert result is not None
     assert isinstance(result, PlayerJoined)
-    assert result.player_name == "Rene"
+    assert result.player_name == "Baumfaust"
 
-def test_parse_player_joined_message():
-    log_message = '02/04/2025 19:47:49: Got character ZDOID from Rene : 0:0'
+def test_parse_player_died_message():
+    log_message = ' 02/14/2025 21:07:48: Got character ZDOID from Baumfaust : 0:0'
 
     result = parse_player_died_message(log_message)
 
     assert result is not None
     assert isinstance(result, PlayerDied)
-    assert result.player_name == "Rene"
+    assert result.player_name == "Baumfaust"
+
+def test_parse_player_left_message():
+    session_message = '02/14/2025 21:09:48: Got character ZDOID from Baumfaust : 1470032995:3'
+    left_message = '02/14/2025 21:07:48: Destroying abandoned non persistent zdo 1470032995:743 owner 1470032995'
+
+    parse_player_session_id_message(session_message)
+    
+    left_result = parse_player_left_message(left_message)
+
+    assert left_result is not None
+    assert isinstance(left_result, PlayerLeft)
+    assert left_result.player_name == "Baumfaust"
+
 
 def test_parse_valheim_log_session():
     log_message = ('Session "MyValheimSession" with join code 12345 and IP 192.168.1.100:2456 '

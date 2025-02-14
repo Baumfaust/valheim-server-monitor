@@ -37,6 +37,9 @@ class PlayerJoined(LogEntry):
 class PlayerDied(LogEntry):
     player_name: str
 
+@dataclass(frozen=True)
+class PlayerLeft(LogEntry):
+    player_name: str
 
 def parse_session_message(entry_message: str):
     pattern = (
@@ -88,12 +91,43 @@ def parse_player_died_message(entry_message: str):
         return PlayerDied(player_name)
     return None
 
+_player_session_ids = {}
+
+def parse_player_session_id_message(entry_message: str):
+    # This pattern matches:
+    pattern = r"Got character ZDOID from (\w+)\s*:\s*(\d+:\d+)"
+    match = re.search(pattern, entry_message)
+    if match:
+        player_name = match.group(1)
+        player_session_id = match.group(2)
+        if player_name not in _player_session_ids or _player_session_ids[player_name] != player_session_id:
+            _player_session_ids[player_name] = player_session_id
+    return
+
+def parse_player_left_message(entry_message: str):
+    # This pattern matches:
+    pattern = r"Destroying.*\bowner\s+(\d+)\b"
+    match = re.search(pattern, entry_message)
+    if match:
+        player_session_id = match.group(1)
+        player_name = next((name for name, session in _player_session_ids.items()
+                            if session.startswith(player_session_id)), None)
+
+        if player_name:
+            del _player_session_ids[player_name]
+            return PlayerLeft(player_name)
+    return None
+
+
 # List of parser functions for extensibility
 _log_parsers = [
     sever_started_version_message,
     parse_session_message,
     parse_player_joined_message,
-    # Additional parsers can be added here
+    parse_player_session_id_message,
+    parse_player_died_message,
+    parse_player_left_message,
+    sever_stopped_message,
 ]
 
 

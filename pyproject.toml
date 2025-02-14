@@ -9,3 +9,6 @@ task-tags = ["TODO", "FIXME", "HACK", "XXX"]
 
 [tool.ruff.format]
 quote-style = "double"  # Optional: Use double quotes
+
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"

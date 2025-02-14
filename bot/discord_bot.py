@@ -29,15 +29,15 @@ async def send_discord_message(event_data):
             case ValheimSession(session_name, join_code, address, player_count):
                 await default_channel.send(f"🏞️ Server **{session_name}** with join code **{join_code}** "
                                            f"and IP **{address}** is online "
-                                           f"with {player_count} player(s)!")
+                                           f"with {player_count} player(s)")
             case ServerStarted(valheim_version):
-                await default_channel.send(f"🏞️ Valheim server started with version **{valheim_version}**")
+                await default_channel.send(f"🏞️ Valheim server started running version **{valheim_version}**")
             case ServerStopped():
-                await default_channel.send("❌ Valheim server stopped!")
+                await default_channel.send("❌ Valheim server stopped")
             case PlayerJoined(player_name):
                 await default_channel.send(random_join_message(player_name))
             case PlayerDied(player_name):
-                await default_channel.send(f"💀 **{player_name}** died!")
+                await default_channel.send(f"💀 **{player_name}** died")
             case _:
                 logger.warning("Unknown event type")
     else:
