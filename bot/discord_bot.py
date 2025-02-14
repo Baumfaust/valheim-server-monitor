@@ -8,7 +8,14 @@ from dotenv import load_dotenv
 
 from bot.join_messages import random_join_message
 from event_bus import Topic, event_bus
-from monitor.valheim_log_parser import PlayerDied, PlayerJoined, ServerStarted, ServerStopped, ValheimSession
+from monitor.valheim_log_parser import (
+    PlayerDied,
+    PlayerJoined,
+    PlayerLeft,
+    ServerStarted,
+    ServerStopped,
+    ValheimSession,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +45,8 @@ async def send_discord_message(event_data):
                 await default_channel.send(random_join_message(player_name))
             case PlayerDied(player_name):
                 await default_channel.send(f"💀 **{player_name}** died")
+            case PlayerLeft(player_name):
+                await default_channel.send(f"👋 **{player_name}** left the server")
             case _:
                 logger.warning("Unknown event type")
     else:
