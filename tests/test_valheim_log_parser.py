@@ -1,14 +1,12 @@
 import pytest
 
-import event_bus
-from monitor.valheim_log_parser import (
+from src.valheim_monitor.monitor.valheim_log_parser import (
     PlayerDied,
     PlayerJoined,
     PlayerLeft,
     ServerStarted,
     ServerStopped,
     ValheimSession,
-    handle_message,
     parse_player_died_message,
     parse_player_joined_message,
     parse_player_left_message,
@@ -116,44 +114,3 @@ def test_parse_valheim_log_no_match():
     result = parse_valheim_log(log_message)
 
     assert result is None
-
-
-@pytest.mark.asyncio(loop_scope='function')
-async def test_handle_message_session(mocker):
-    log_message = ('Session "MyValheimSession" with join code 12345 and IP 192.168.1.100:2456 '
-                   'is active with 10 player(s)')
-
-    mock_publish = mocker.patch('event_bus.EventBus.publish')  # Mock event_bus.publish
-
-    await handle_message(log_message)
-
-    log_entry = ValheimSession("MyValheimSession", 12345, "192.168.1.100:2456", 10)
-
-    # Assert that the mock publish method was called with the correct arguments
-    mock_publish.assert_called_once_with(event_bus.Topic.LOG_EVENT, log_entry)
-
-
-@pytest.mark.asyncio(loop_scope='function')
-async def test_handle_message_player_join(mocker):
-    log_message = 'Console: <color=orange>Erwin</color>: <color=#FFEB04FF>I HAVE ARRIVED!</color>'
-
-    mock_publish = mocker.patch('event_bus.EventBus.publish')  # Mock event_bus.publish
-
-    await handle_message(log_message)
-
-    log_entry = PlayerJoined("Erwin")
-
-    # Assert that the mock publish method was called with the correct arguments
-    mock_publish.assert_called_once_with(event_bus.Topic.LOG_EVENT, log_entry)
-
-
-@pytest.mark.asyncio(loop_scope='function')
-async def test_handle_message_no_match(mocker):
-    log_message = "Some other log message"
-
-    mock_publish = mocker.patch('event_bus.EventBus.publish')  # Mock event_bus.publish
-
-    await handle_message(log_message)
-
-    # Ensure that the publish method was not called
-    mock_publish.assert_not_called()

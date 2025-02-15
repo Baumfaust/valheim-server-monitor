@@ -2,7 +2,7 @@ import logging
 import re
 from dataclasses import dataclass
 
-from event_bus import Topic, event_bus
+from src.valheim_monitor.event_bus import Topic, event_bus
 
 logger = logging.getLogger(__name__)
 
