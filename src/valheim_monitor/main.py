@@ -15,7 +15,7 @@ logging.basicConfig(
     level=log_level,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler("app.log"),
+        logging.FileHandler("../../app.log"),
         logging.StreamHandler()
     ]
 )
@@ -40,8 +40,8 @@ def handle_shutdown_signal():
 def register_signal_handlers():
     """Registers signal handlers, using a thread-based approach on Windows."""
     if sys.platform == "win32":
-        signal.signal(signal.SIGINT, lambda sig, frame: handle_shutdown_signal())
-        signal.signal(signal.SIGTERM, lambda sig, frame: handle_shutdown_signal())
+        signal.signal(signal.SIGINT, lambda signal_handler, frame: handle_shutdown_signal())
+        signal.signal(signal.SIGTERM, lambda signal_handler, frame: handle_shutdown_signal())
     else:
         loop = asyncio.get_running_loop()
         for sig in (signal.SIGTERM, signal.SIGINT):
@@ -56,7 +56,7 @@ def select_log_monitoring():
     # Match on the monitor type
     match monitor_type:
         case 'journal' if unit_name:
-            from monitor.journal_monitor import journal_monitor
+            from src.valheim_monitor.monitor import journal_monitor
             return journal_monitor, unit_name
         case 'file' if log_file:
             return log_file_monitor, log_file

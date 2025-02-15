@@ -1,11 +1,10 @@
-#!/usr/bin/env python3
 import asyncio
 import logging
 import select
 
 from systemd import journal  # pip3 install systemd-python
 
-from monitor.valheim_log_parser import handle_message
+from src.valheim_monitor.monitor.valheim_log_parser import handle_message
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ async def journal_monitor(unit_name):
             if j.process() == journal.APPEND: # Check if new entries are available
                 for entry in j:
                     line = entry['MESSAGE']
-                    logger.debug(f"{line_number} => {line}")
+                    #logger.debug(f"{line_number} => {line}")
                     await handle_message(line.strip())
                     line_number += 1
             await asyncio.sleep(0.1)
