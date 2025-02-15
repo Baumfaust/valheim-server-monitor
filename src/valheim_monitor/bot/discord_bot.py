@@ -27,6 +27,8 @@ TOKEN: Final[str] = os.getenv("DISCORD_TOKEN")
 
 # Discord Bot Setup
 intents = discord.Intents.default()
+intents.guilds = True
+
 client = discord.Client(intents=intents)
 
 # Event to signal when bot is ready
@@ -77,7 +79,7 @@ async def on_ready():
     logger.debug(f'Logged in as {client.user}')
     global server_channels
     server_channels = {}  # Reset channels in case of reconnect
-
+    logger.debug(f'Client has {len(client.guilds)} guilds')
     for guild in client.guilds:
         valheim_channel = discord.utils.get(guild.text_channels, name="valheim")
 
