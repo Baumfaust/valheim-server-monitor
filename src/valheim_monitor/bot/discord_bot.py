@@ -42,7 +42,8 @@ async def send_discord_message(event_data):
         if channel:
             match event_data:
                 case ValheimSession(session_name, join_code, address, player_count):
-                    await channel.send(f"🏞️ Server **{session_name}** is online! Join code: **{join_code}** | IP: **{address}** | Players: **{player_count}**")
+                    await channel.send(f"🏞️ Server **{session_name}** is online! Join code: **{join_code}** "
+                                       f"| IP: **{address}** | Players: **{player_count}**")
                 case ServerStarted(valheim_version):
                     await channel.send(f"🏞️ Valheim server started, running version **{valheim_version}**")
                 case ServerStopped():
@@ -62,7 +63,7 @@ async def send_discord_message(event_data):
 async def handle_discord_events():
     """Subscribes to log events and forwards them to Discord."""
     async def send_event_to_discord(event_data):
-        logger.info(f"Received event: {event_data}")
+        logger.debug(f"Received event: {event_data}")
         await send_discord_message(event_data)
 
     topic = Topic.LOG_EVENT
@@ -73,18 +74,22 @@ async def handle_discord_events():
 @client.event
 async def on_ready():
     """Triggered when the bot connects to Discord."""
-    logger.info(f'✅ Logged in as {client.user}')
+    logger.debug(f'Logged in as {client.user}')
     global server_channels
     server_channels = {}  # Reset channels in case of reconnect
 
     for guild in client.guilds:
         valheim_channel = discord.utils.get(guild.text_channels, name="valheim")
-        if valheim_channel and valheim_channel.permissions_for(guild.me).send_messages:
-            server_channels[guild.id] = valheim_channel
-            logger.info(f"✅ Found #valheim in {guild.name} ({guild.id})")
+
+        if valheim_channel:
+            logger.debug(f"Found #valheim in {guild.name} ({guild.id})")
+            if valheim_channel.permissions_for(guild.me).send_messages:
+                logger.debug(f"Bot has permission to send messages in {valheim_channel}")
+                server_channels[guild.id] = valheim_channel
+                logger.debug(f"Added {valheim_channel} to server_channels")
         else:
             server_channels[guild.id] = None
-            logger.warning(f"⚠️ No #valheim channel found in {guild.name} ({guild.id})")
+            logger.warning(f"No #valheim channel found in {guild.name} ({guild.id})")
 
     await handle_discord_events()
     ready_discord.set()
@@ -95,7 +100,7 @@ async def run_bot():
     try:
         await client.start(TOKEN)
     except asyncio.CancelledError:
-        logger.info("Bot task cancelled. Closing Discord client...")
+        logger.debug("Bot task cancelled. Closing Discord client...")
         await client.close()
-        logger.info("Discord client closed.")
+        logger.debug("Discord client closed.")
         raise  # Propagate the error to handle shutdown properly
