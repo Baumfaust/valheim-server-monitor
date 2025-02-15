@@ -4,9 +4,9 @@ import os
 import signal
 import sys
 
-from bot.discord_bot import ready_discord, run_bot
-from monitor.log_file_monitor import log_file_monitor
-from utils.venv_utils import check_venv
+from valheim_monitor.bot.discord_bot import ready_discord, run_bot
+from valheim_monitor.monitor.log_file_monitor import log_file_monitor
+from valheim_monitor.utils.venv_utils import check_venv
 
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 
@@ -56,7 +56,7 @@ def select_log_monitoring():
     # Match on the monitor type
     match monitor_type:
         case 'journal' if unit_name:
-            from src.valheim_monitor.monitor import journal_monitor
+            from valheim_monitor.monitor import journal_monitor
             return journal_monitor, unit_name
         case 'file' if log_file:
             return log_file_monitor, log_file

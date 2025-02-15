@@ -6,9 +6,9 @@ from typing import Final
 import discord
 from dotenv import load_dotenv
 
-from src.valheim_monitor.bot.join_messages import random_join_message
-from src.valheim_monitor.event_bus import Topic, event_bus
-from src.valheim_monitor.monitor.valheim_log_parser import (
+from valheim_monitor.bot.join_messages import random_join_message
+from valheim_monitor.event_bus import Topic, event_bus
+from valheim_monitor.monitor.valheim_log_parser import (
     PlayerDied,
     PlayerJoined,
     PlayerLeft,

@@ -4,7 +4,7 @@ import select
 
 from systemd import journal  # pip3 install systemd-python
 
-from src.valheim_monitor.monitor.valheim_log_parser import handle_message
+from valheim_monitor.monitor.valheim_log_parser import handle_message
 
 logger = logging.getLogger(__name__)
 

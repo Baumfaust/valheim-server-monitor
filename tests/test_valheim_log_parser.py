@@ -1,5 +1,5 @@
 
-from src.valheim_monitor.monitor.valheim_log_parser import (
+from valheim_monitor.monitor.valheim_log_parser import (
     PlayerDied,
     PlayerJoined,
     PlayerLeft,
