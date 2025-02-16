@@ -55,7 +55,7 @@ def select_log_monitoring():
     # Match on the monitor type
     match monitor_type:
         case 'journal' if unit_name:
-            from monitor import journal_monitor
+            from monitor.journal_monitor import journal_monitor
             logger.debug(f"Monitoring systemd journal for unit: {unit_name}")
             return journal_monitor, unit_name
         case 'file' if log_file:
