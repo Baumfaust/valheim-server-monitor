@@ -60,7 +60,7 @@ jobs:
             python3 -m venv .venv
           fi
           
-          source venv/bin/activate
+          source .venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
           
@@ -75,6 +75,7 @@ jobs:
         username: ${{ secrets.DEPLOY_SSH_USER }}
         key: ${{ secrets.DEPLOY_SSH_KEY }}
         script: |
+          set -e  # Exit immediately on any error
           sudo systemctl daemon-reload
           sudo systemctl restart valheim_monitor.service
           sudo systemctl status valheim_monitor.service --no-pager

@@ -2,9 +2,8 @@ import asyncio
 import logging
 import select
 
-from systemd import journal  # pip3 install systemd-python
-
 from monitor.valheim_log_parser import handle_message
+from systemd import journal  # pip3 install systemd-python
 
 logger = logging.getLogger(__name__)
 
