@@ -1,6 +1,5 @@
 
 import pytest
-
 from event_bus import EventBus, Topic
 
 
