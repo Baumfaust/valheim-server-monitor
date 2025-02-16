@@ -56,7 +56,7 @@ def select_log_monitoring():
     # Match on the monitor type
     match monitor_type:
         case 'journal' if unit_name:
-            from src.valheim_monitor.monitor import journal_monitor
+            from monitor import journal_monitor
             return journal_monitor, unit_name
         case 'file' if log_file:
             return log_file_monitor, log_file

@@ -39,7 +39,7 @@ jobs:
       uses: burnett01/rsync-deployments@7.0.2
       with:
         switches: -avz --delete
-        path: ./src/ ./pyproject.toml ./requirements.txt
+        path: ./src/valheim_monitor ./pyproject.toml ./requirements.txt
         remote_path: /opt/valheim-server-monitor
         remote_host: ${{ secrets.DEPLOY_SSH_HOST }}
         remote_user: ${{ secrets.DEPLOY_SSH_USER }}
@@ -62,6 +62,8 @@ jobs:
           source venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
+          
+          chown -R valheim:valheim /opt/valheim-server-monitor
           
           echo "Deployment successful!"
 

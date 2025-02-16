@@ -1,7 +1,7 @@
 
 import pytest
 
-from src.valheim_monitor.event_bus import EventBus, Topic
+from event_bus import EventBus, Topic
 
 
 @pytest.mark.asyncio(loop_scope='function')
