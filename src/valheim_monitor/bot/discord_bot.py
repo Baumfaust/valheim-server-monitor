@@ -16,9 +16,7 @@ from monitor.valheim_log_parser import (
     ValheimSession,
 )
 
-# Configure Logging
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 
 # Load environment variables
 load_dotenv()

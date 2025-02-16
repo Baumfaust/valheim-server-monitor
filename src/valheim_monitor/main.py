@@ -6,6 +6,7 @@ import sys
 
 from bot.discord_bot import ready_discord, run_bot
 from monitor.log_file_monitor import log_file_monitor
+from prometheus.metrics_exporter import ready_metrics_exporter
 from utils.venv_utils import check_venv
 
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -71,10 +72,11 @@ async def main():
     register_signal_handlers()
 
     bot_task = asyncio.create_task(run_bot())
+    metrics_exporter_task = asyncio.create_task(ready_metrics_exporter())
 
     # Wait for all subscribers to be ready
     logger.debug("Waiting for all subscribers to be ready...")
-    await asyncio.gather(ready_discord.wait())
+    await asyncio.gather(ready_discord.wait(), ready_metrics_exporter.wait())
     logger.debug("All subscribers are ready!")
 
     logger.debug(f"Starting monitor: {monitor} target: {monitor_target}")
@@ -90,9 +92,10 @@ async def main():
 
     monitor_task.cancel()
     bot_task.cancel()
+    metrics_exporter_task.cancel()
 
     # Wait for tasks to cancel gracefully
-    await asyncio.gather(bot_task, monitor_task, return_exceptions=True)
+    await asyncio.gather(bot_task, monitor_task, metrics_exporter_task, return_exceptions=True)
     logger.info("Shutdown complete.")
 
 
