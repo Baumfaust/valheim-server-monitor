@@ -14,10 +14,10 @@ from prometheus_client import Counter, Gauge, start_http_server
 logger = logging.getLogger(__name__)
 ready_metrics_exporter = asyncio.Event()
 
-server_status = Gauge("server_status", "Online status of valheim server")
-online_players_total = Gauge("online_players_total", "Total number of players currently online")
-player_status = Gauge("player_status", "Online status of individual players", ["player_name"])
-player_death_count = Counter("player_death_count", "Death count per player", ["player_name"])
+server_status = Gauge("valheim_server_status", "Online status of valheim server")
+online_players_total = Gauge("valheim_online_players_total", "Total number of players currently online")
+player_status = Gauge("valheim_player_status", "Online status of individual players", ["player_name"])
+player_death_count = Counter("valheim_player_death_count", "Death count per player", ["player_name"])
 
 async def update_metrics(event_data):
     match event_data:
@@ -36,11 +36,14 @@ async def update_metrics(event_data):
 
 async def run_metrics_exporter():
     try:
-        start_http_server(8000)
         topic = Topic.LOG_EVENT
         event_bus.subscribe(topic, update_metrics)
         logger.debug(f"Metrics exporter subscribed to {topic}")
         ready_metrics_exporter.set()
+        logger.debug("starting http server")
+        start_http_server(8000)
+        logger.debug("http server started on port 8000")
+
     except asyncio.CancelledError:
         logger.debug("Stopping metrics exporter")
         raise

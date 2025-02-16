@@ -6,7 +6,7 @@ import sys
 
 from bot.discord_bot import ready_discord, run_bot
 from monitor.log_file_monitor import log_file_monitor
-from prometheus.metrics_exporter import ready_metrics_exporter
+from prometheus.metrics_exporter import ready_metrics_exporter, run_metrics_exporter
 from utils.venv_utils import check_venv
 
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -72,7 +72,7 @@ async def main():
     register_signal_handlers()
 
     bot_task = asyncio.create_task(run_bot())
-    metrics_exporter_task = asyncio.create_task(ready_metrics_exporter())
+    metrics_exporter_task = asyncio.create_task(run_metrics_exporter())
 
     # Wait for all subscribers to be ready
     logger.debug("Waiting for all subscribers to be ready...")
