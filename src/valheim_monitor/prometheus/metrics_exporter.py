@@ -6,19 +6,25 @@ from monitor.valheim_log_parser import (
     PlayerDied,
     PlayerJoined,
     PlayerLeft,
+    ServerStarted,
+    ServerStopped,
 )
 from prometheus_client import Counter, Gauge, start_http_server
 
 logger = logging.getLogger(__name__)
 ready_metrics_exporter = asyncio.Event()
 
+server_status = Gauge("server_status", "Online status of valheim server")
 online_players_total = Gauge("online_players_total", "Total number of players currently online")
 player_status = Gauge("player_status", "Online status of individual players", ["player_name"])
 player_death_count = Counter("player_death_count", "Death count per player", ["player_name"])
 
-
 async def update_metrics(event_data):
     match event_data:
+        case ServerStarted():
+            server_status.set(1)
+        case ServerStopped():
+            server_status.set(0)
         case PlayerJoined(player_name):
             player_status.labels(player_name).set(1)
         case PlayerDied(player_name):
@@ -27,7 +33,6 @@ async def update_metrics(event_data):
             player_status.labels(player_name).set(0)
         case _:
             logger.warning("Unknown event type")
-
 
 async def run_metrics_exporter():
     try:
