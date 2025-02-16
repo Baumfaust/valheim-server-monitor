@@ -4,3 +4,4 @@ asyncio
 systemd
 python-dotenv
 systemd-python
+prometheus_client

@@ -1,0 +1,17 @@
+[Unit]
+Description=Valheim Server Monitor
+After=network.target
+
+[Service]
+Type=simple
+Environment="PYTHONPATH=/opt/valheim-server-monitor"
+ExecStart=/opt/valheim-server-monitor/.venv/bin/python main.py
+WorkingDirectory=/opt/valheim-server-monitor
+User=valheim
+Group=valheim
+Restart=always
+RestartSec=5
+Environment="PYTHONUNBUFFERED=1"
+
+[Install]
+WantedBy=multi-user.target
