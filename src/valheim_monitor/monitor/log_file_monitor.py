@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 
-from src.valheim_monitor.monitor.valheim_log_parser import handle_message
+from monitor.valheim_log_parser import handle_message
 
 logger = logging.getLogger(__name__)
 

@@ -3,3 +3,4 @@ aiohttp
 asyncio 
 systemd
 python-dotenv
+systemd-python

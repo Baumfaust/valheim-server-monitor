@@ -15,7 +15,6 @@ logging.basicConfig(
     level=log_level,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler("../../app.log"),
         logging.StreamHandler()
     ]
 )
@@ -56,9 +55,11 @@ def select_log_monitoring():
     # Match on the monitor type
     match monitor_type:
         case 'journal' if unit_name:
-            from src.valheim_monitor.monitor import journal_monitor
+            from monitor.journal_monitor import journal_monitor
+            logger.debug(f"Monitoring systemd journal for unit: {unit_name}")
             return journal_monitor, unit_name
         case 'file' if log_file:
+            logger.debug(f"Monitoring log file: {log_file}")
             return log_file_monitor, log_file
         case _:
             logger.error("Invalid configuration. Please set MONITOR_TYPE and UNIT_NAME, or LOG_FILE_PATH.")
@@ -76,6 +77,11 @@ async def main():
     await asyncio.gather(ready_discord.wait())
     logger.debug("All subscribers are ready!")
 
+    logger.debug(f"Starting monitor: {monitor} target: {monitor_target}")
+
+    if monitor is None or monitor_target is None:
+        logger.error("Invalid configuration. Please set MONITOR_TYPE and UNIT_NAME, or LOG_FILE_PATH.")
+        exit(1)
     monitor_task = asyncio.create_task(monitor(monitor_target))
 
     # Wait until shutdown event is triggered
