@@ -77,6 +77,8 @@ async def main():
     await asyncio.gather(ready_discord.wait())
     logger.debug("All subscribers are ready!")
 
+    logger.debug(f"Starting monitor: {monitor} target: {monitor_target}")
+
     if monitor is None or monitor_target is None:
         logger.error("Invalid configuration. Please set MONITOR_TYPE and UNIT_NAME, or LOG_FILE_PATH.")
         exit(1)
