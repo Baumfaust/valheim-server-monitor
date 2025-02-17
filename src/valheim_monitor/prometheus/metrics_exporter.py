@@ -20,19 +20,25 @@ player_status = Gauge("valheim_player_status", "Online status of individual play
 player_death_count = Counter("valheim_player_death_count", "Death count per player", ["player_name"])
 
 async def update_metrics(event_data):
-    match event_data:
-        case ServerStarted():
-            server_status.set(1)
-        case ServerStopped():
-            server_status.set(0)
-        case PlayerJoined(player_name):
-            player_status.labels(player_name).set(1)
-        case PlayerDied(player_name):
-            player_death_count.labels(player_name).inc()
-        case PlayerLeft(player_name):
-            player_status.labels(player_name).set(0)
-        case _:
-            logger.warning("Unknown event type")
+    try:
+        match event_data:
+            case ServerStarted():
+                server_status.set(1)
+            case ServerStopped():
+                server_status.set(0)
+            case PlayerJoined(player_name):
+                logger.debug(f"Setting metric player joined: {player_name}")
+                player_status.labels(player_name).set(1)
+            case PlayerDied(player_name):
+                logger.debug(f"Setting metric player died: {player_name}")
+                player_death_count.labels(player_name).inc()
+            case PlayerLeft(player_name):
+                logger.debug(f"Setting metric player left: {player_name}")
+                player_status.labels(player_name).set(0)
+            case _:
+                logger.warning("Unknown event type")
+    except Exception as e:
+        logger.error(f"Error updating metrics: {e}")
 
 async def run_metrics_exporter():
     try:

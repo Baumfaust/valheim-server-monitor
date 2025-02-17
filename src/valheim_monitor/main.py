@@ -14,7 +14,7 @@ log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 # Configure logging
 logging.basicConfig(
     level=log_level,
-    format="%(asctime)s - %(levelname)s - %(message)s",
+    format="%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s",
     handlers=[
         logging.StreamHandler()
     ]
