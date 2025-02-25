@@ -95,14 +95,14 @@ _player_session_ids = {}
 
 def parse_player_session_id_message(entry_message: str):
     # This pattern matches:
-    pattern = r"Got character ZDOID from (\w+)\s*:\s*(\d+:\d+)"
+    pattern = r"Got character ZDOID from (\w+)\s*:\s*(?!0:0)(\d+:\d+)"
     match = re.search(pattern, entry_message)
     if match:
         player_name = match.group(1)
         player_session_id = match.group(2)
         if player_name not in _player_session_ids or _player_session_ids[player_name] != player_session_id:
             _player_session_ids[player_name] = player_session_id
-    return
+    return 
 
 def parse_player_left_message(entry_message: str):
     # This pattern matches:

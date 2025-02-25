@@ -14,6 +14,7 @@ from src.valheim_monitor.monitor.valheim_log_parser import (
     parse_valheim_log,
     sever_started_version_message,
     sever_stopped_message,
+    _player_session_ids,
 )
 
 
@@ -75,7 +76,24 @@ def test_parse_player_died_message():
     assert isinstance(result, PlayerDied)
     assert result.player_name == "Baumfaust"
 
+def test_parse_player_session_id():
+    _player_session_ids.clear()
+    session_message = '02/14/2025 21:09:48: Got character ZDOID from Baumfaust : 1470032995:3'
+
+    parse_player_session_id_message(session_message)
+    assert "Baumfaust" in _player_session_ids
+    assert _player_session_ids["Baumfaust"] == "1470032995:3"
+
+
+def test_parse_player_no_session_id():
+    _player_session_ids.clear()
+    log_message = ' 02/14/2025 21:07:48: Got character ZDOID from Baumfaust : 0:0'
+
+    parse_player_session_id_message(log_message)
+    assert _player_session_ids == {}
+
 def test_parse_player_left_message():
+    _player_session_ids.clear()
     session_message = '02/14/2025 21:09:48: Got character ZDOID from Baumfaust : 1470032995:3'
     left_message = '02/14/2025 21:07:48: Destroying abandoned non persistent zdo 1470032995:743 owner 1470032995'
 
