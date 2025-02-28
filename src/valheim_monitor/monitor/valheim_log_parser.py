@@ -95,7 +95,7 @@ _player_session_ids = {}
 
 def parse_player_session_id_message(entry_message: str):
     # This pattern matches:
-    pattern = r"Got character ZDOID from (\w+)\s*:\s*(?!0:0)(\d+:\d+)"
+    pattern = r"Got character ZDOID from (\w+)\s*:\s*(?!0:0)(-?\d+):\d+"
     match = re.search(pattern, entry_message)
     if match:
         player_name = match.group(1)
@@ -106,7 +106,7 @@ def parse_player_session_id_message(entry_message: str):
 
 def parse_player_left_message(entry_message: str):
     # This pattern matches:
-    pattern = r"Destroying.*\bowner\s+(\d+)\b"
+    pattern = r"Destroying.*\bowner\s+(-?\d+)\b"
     match = re.search(pattern, entry_message)
     if match:
         player_session_id = match.group(1)

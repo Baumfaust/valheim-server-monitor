@@ -6,6 +6,7 @@ from src.valheim_monitor.monitor.valheim_log_parser import (
     ServerStarted,
     ServerStopped,
     ValheimSession,
+    _player_session_ids,
     parse_player_died_message,
     parse_player_joined_message,
     parse_player_left_message,
@@ -14,7 +15,6 @@ from src.valheim_monitor.monitor.valheim_log_parser import (
     parse_valheim_log,
     sever_started_version_message,
     sever_stopped_message,
-    _player_session_ids,
 )
 
 
@@ -82,7 +82,15 @@ def test_parse_player_session_id():
 
     parse_player_session_id_message(session_message)
     assert "Baumfaust" in _player_session_ids
-    assert _player_session_ids["Baumfaust"] == "1470032995:3"
+    assert _player_session_ids["Baumfaust"] == "1470032995"
+
+def test_parse_player_session_negative_id():
+    _player_session_ids.clear()
+    session_message = '02/25/2025 21:08:05: Got character ZDOID from Rene : -386684645:3'
+
+    parse_player_session_id_message(session_message)
+    assert "Rene" in _player_session_ids
+    assert _player_session_ids["Rene"] == "-386684645"
 
 
 def test_parse_player_no_session_id():
@@ -105,6 +113,19 @@ def test_parse_player_left_message():
     assert isinstance(left_result, PlayerLeft)
     assert left_result.player_name == "Baumfaust"
 
+
+def test_parse_player_left_message_negative_id():
+    _player_session_ids.clear()
+    session_message = '02/25/2025 21:08:05: Got character ZDOID from Rene : -386684645:3'
+    left_message = '02/25/2025 21:44:10: Destroying abandoned non persistent zdo -386684645:3 owner -386684645'
+
+    parse_player_session_id_message(session_message)
+
+    left_result = parse_player_left_message(left_message)
+
+    assert left_result is not None
+    assert isinstance(left_result, PlayerLeft)
+    assert left_result.player_name == "Rene"
 
 def test_parse_valheim_log_session():
     log_message = ('Session "MyValheimSession" with join code 12345 and IP 192.168.1.100:2456 '
