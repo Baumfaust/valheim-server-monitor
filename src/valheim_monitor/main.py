@@ -6,6 +6,7 @@ import sys
 
 from bot.discord_bot import ready_discord, run_bot
 from monitor.log_file_monitor import log_file_monitor
+from prometheus.metrics_exporter import ready_metrics_exporter, run_metrics_exporter
 from utils.venv_utils import check_venv
 
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -13,9 +14,8 @@ log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 # Configure logging
 logging.basicConfig(
     level=log_level,
-    format="%(asctime)s - %(levelname)s - %(message)s",
+    format="%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s",
     handlers=[
-        logging.FileHandler("../../app.log"),
         logging.StreamHandler()
     ]
 )
@@ -56,9 +56,11 @@ def select_log_monitoring():
     # Match on the monitor type
     match monitor_type:
         case 'journal' if unit_name:
-            from src.valheim_monitor.monitor import journal_monitor
+            from monitor.journal_monitor import journal_monitor
+            logger.debug(f"Monitoring systemd journal for unit: {unit_name}")
             return journal_monitor, unit_name
         case 'file' if log_file:
+            logger.debug(f"Monitoring log file: {log_file}")
             return log_file_monitor, log_file
         case _:
             logger.error("Invalid configuration. Please set MONITOR_TYPE and UNIT_NAME, or LOG_FILE_PATH.")
@@ -70,12 +72,18 @@ async def main():
     register_signal_handlers()
 
     bot_task = asyncio.create_task(run_bot())
+    metrics_exporter_task = asyncio.create_task(run_metrics_exporter())
 
     # Wait for all subscribers to be ready
     logger.debug("Waiting for all subscribers to be ready...")
-    await asyncio.gather(ready_discord.wait())
+    await asyncio.gather(ready_discord.wait(), ready_metrics_exporter.wait())
     logger.debug("All subscribers are ready!")
 
+    logger.debug(f"Starting monitor: {monitor} target: {monitor_target}")
+
+    if monitor is None or monitor_target is None:
+        logger.error("Invalid configuration. Please set MONITOR_TYPE and UNIT_NAME, or LOG_FILE_PATH.")
+        exit(1)
     monitor_task = asyncio.create_task(monitor(monitor_target))
 
     # Wait until shutdown event is triggered
@@ -84,9 +92,10 @@ async def main():
 
     monitor_task.cancel()
     bot_task.cancel()
+    metrics_exporter_task.cancel()
 
     # Wait for tasks to cancel gracefully
-    await asyncio.gather(bot_task, monitor_task, return_exceptions=True)
+    await asyncio.gather(bot_task, monitor_task, metrics_exporter_task, return_exceptions=True)
     logger.info("Shutdown complete.")
 
 

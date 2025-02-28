@@ -4,11 +4,10 @@ import os
 from typing import Final
 
 import discord
+from bot.join_messages import random_join_message
 from dotenv import load_dotenv
-
-from src.valheim_monitor.bot.join_messages import random_join_message
-from src.valheim_monitor.event_bus import Topic, event_bus
-from src.valheim_monitor.monitor.valheim_log_parser import (
+from event_bus import Topic, event_bus
+from monitor.valheim_log_parser import (
     PlayerDied,
     PlayerJoined,
     PlayerLeft,
@@ -17,9 +16,7 @@ from src.valheim_monitor.monitor.valheim_log_parser import (
     ValheimSession,
 )
 
-# Configure Logging
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 
 # Load environment variables
 load_dotenv()

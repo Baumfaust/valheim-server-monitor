@@ -1,0 +1,81 @@
+name: Deploy to Ubuntu Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set Version
+      id: versioning
+      run: |
+        VERSION=$(date +"%Y%m%d%H%M%S")
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "Tagging version: $VERSION"
+        git tag "v$VERSION"
+        git push origin --tags
+
+    - name: Deploy via SSH & Rsync
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.DEPLOY_SSH_HOST }}
+        username: ${{ secrets.DEPLOY_SSH_USER }}
+        key: ${{ secrets.DEPLOY_SSH_KEY }}
+        script: |
+          set -e  # Exit on errors
+
+          # Create directory if not exists
+          sudo mkdir -p /opt/valheim-server-monitor
+          sudo chown -R $USER:$USER /opt/valheim-server-monitor
+
+    - name: Sync Files to Server
+      uses: burnett01/rsync-deployments@7.0.2
+      with:
+        switches: -avz --delete
+        path: ./src/valheim_monitor/ ./pyproject.toml ./requirements.txt
+        remote_path: /opt/valheim-server-monitor
+        remote_host: ${{ secrets.DEPLOY_SSH_HOST }}
+        remote_user: ${{ secrets.DEPLOY_SSH_USER }}
+        remote_key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+    - name: Setup Python Virtual Environment & Install Dependencies
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.DEPLOY_SSH_HOST }}
+        username: ${{ secrets.DEPLOY_SSH_USER }}
+        key: ${{ secrets.DEPLOY_SSH_KEY }}
+        script: |
+          set -e  # Exit immediately on any error
+          cd /opt/valheim-server-monitor
+          
+          # Create venv if it doesn't exist
+          if [ ! -d ".venv" ]; then
+            python3 -m venv .venv
+          fi
+          
+          source .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          
+          sudo chown -R valheim:valheim /opt/valheim-server-monitor
+          
+          echo "Deployment successful!"
+
+    - name: Restart Systemd Service
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.DEPLOY_SSH_HOST }}
+        username: ${{ secrets.DEPLOY_SSH_USER }}
+        key: ${{ secrets.DEPLOY_SSH_KEY }}
+        script: |
+          set -e  # Exit immediately on any error
+          sudo systemctl daemon-reload
+          sudo systemctl restart valheim_monitor.service
+          sudo systemctl status valheim_monitor.service --no-pager

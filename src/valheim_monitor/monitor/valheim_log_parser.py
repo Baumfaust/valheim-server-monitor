@@ -2,7 +2,7 @@ import logging
 import re
 from dataclasses import dataclass
 
-from src.valheim_monitor.event_bus import Topic, event_bus
+from event_bus import Topic, event_bus
 
 logger = logging.getLogger(__name__)
 
@@ -96,13 +96,17 @@ _player_session_ids = {}
 def parse_player_session_id_message(entry_message: str):
     # This pattern matches:
     pattern = r"Got character ZDOID from (\w+)\s*:\s*(?!0:0)(-?\d+):\d+"
+
     match = re.search(pattern, entry_message)
     if match:
         player_name = match.group(1)
         player_session_id = match.group(2)
         if player_name not in _player_session_ids or _player_session_ids[player_name] != player_session_id:
             _player_session_ids[player_name] = player_session_id
-    return 
+            logger.info(f"Added player to local cache: {player_name} with id {player_session_id}")
+        logger.debug(f"Local cache: {', '.join(f'{name}: {id}' for name, id in _player_session_ids.items())}")
+    return
+
 
 def parse_player_left_message(entry_message: str):
     # This pattern matches:
@@ -115,7 +119,10 @@ def parse_player_left_message(entry_message: str):
 
         if player_name:
             del _player_session_ids[player_name]
+            logger.info(f"Deleted player from local cache: {player_name} with id {player_session_id}")
             return PlayerLeft(player_name)
+        else:
+            logger.warning(f"Player {player_name} not found in local cache")
     return None
 
 
